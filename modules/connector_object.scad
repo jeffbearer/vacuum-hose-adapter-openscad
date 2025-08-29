@@ -203,9 +203,9 @@ function getConnectorSettings(
     conInnerEndDiameter = conInnerDiameter + conTaper / 2,
     conOuterEndDiameter = conInnerEndDiameter + wallThickness*2,
     //If the connector hose is not showm the stop has no thickenss
-    conStopThickness = (conLength <= 0 || style == "mag" || style == "flange") ? 0 : stopThickness,
+    conStopThickness = (conLength <= 0 || style == "mag" || style == "flange" || style == "oneida") ? 0 : stopThickness,
     //If the stop has no thickness, it needs no length
-    conStopLength = (conStopThickness > 0 && style == "hose") ? stopLength : 0
+    conStopLength = (conStopThickness > 0) ? stopLength : 0
     ) [
         connector,
         style, 

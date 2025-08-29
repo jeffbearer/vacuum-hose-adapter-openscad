@@ -24,6 +24,7 @@ include <modules/connector_dyson.scad>
 include <modules/connector_dw735.scad>
 include <modules/connector_osvac.scad>
 include <modules/connector_makita.scad>
+include <modules/connector_oneida.scad>
 
 include <modules/connector_common_post.scad>
 
@@ -41,7 +42,7 @@ DefaultExtensionColor = "MediumSeaGreen";
 //Wall thickness
 End1_Wall_Thickness = 2; //0.01
 //The style of the end
-End1_Style="flange"; // [mag: Magnetic Flange, flange: Flange, hose: Hose connector, dyson: Dyson connector, camlock: CAMLOCK connetor, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacm:osVAC Male, osvacf32:osVAC F32,osvacf:osVAC Female, makita_male: Makita Quick connect Male connector]
+End1_Style="flange"; // [mag: Magnetic Flange, flange: Flange, hose: Hose connector, dyson: Dyson connector, camlock: CAMLOCK connetor, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacm:osVAC Male, osvacf32:osVAC F32,osvacf:osVAC Female, makita_male: Makita Quick connect Male connector, oneida: Oneida Quick Clamp ducting]
 // Is the measurement the adapter's outside or inside diameter?
 End1_Measurement = "inner"; //[inner, outer]
 // End 1 diameter of the adapter (mm, inch)
@@ -158,7 +159,7 @@ Transition_Base_Angle=0;
 /* [Connector 2] */
 //Wall thickness
 End2_Wall_Thickness = 2; //0.01
-End2_Style="nozzle"; // [mag: Magnetic Flange, flange: Flange, hose: Hose connector, nozzle: Nozzle attachement, dyson: Dyson connector, camlock: CAMLOCK connetor, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacm:osVAC Male, osvacf32:osVAC F32,osvacf:osVAC Female, makita_male: Makita Quick connect Male connector, none: None]
+End2_Style="nozzle"; // [mag: Magnetic Flange, flange: Flange, hose: Hose connector, nozzle: Nozzle attachement, dyson: Dyson connector, camlock: CAMLOCK connetor, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacm:osVAC Male, osvacf32:osVAC F32,osvacf:osVAC Female, makita_male: Makita Quick connect Male connector, oneida: Oneida Quick Clamp ducting, none: None]
 // Is the measurement the adapter's outside or inside diameter?
 End2_Measurement = "outer"; //[inner, outer]
 // End 2 diameter of the adapter (mm, inch)
@@ -248,7 +249,7 @@ End2_Extension_Text_Size = 0;
 /* [Connector 3] */
 //Wall thickness
 End3_Wall_Thickness = 2; //0.01
-End3_Style="nozzle"; // [mag: Magnetic Flange, flange: Flange, hose: Hose connector, nozzle: Nozzle attachement, dyson: Dyson connector, camlock: CAMLOCK connetor, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacm:osVAC Male, osvacf32:osVAC F32,osvacf:osVAC Female, makita_male: Makita Quick connect Male connector, none: None]
+End3_Style="nozzle"; // [mag: Magnetic Flange, flange: Flange, hose: Hose connector, nozzle: Nozzle attachement, dyson: Dyson connector, camlock: CAMLOCK connetor, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacm:osVAC Male, osvacf32:osVAC F32,osvacf:osVAC Female, makita_male: Makita Quick connect Male connector, oneida: Oneida Quick Clamp ducting, none: None]
 // Is the measurement the adapter's outside or inside diameter?
 End3_Measurement = "outer"; //[inner, outer]
 // End 3 diameter of the adapter (mm, inch)
@@ -597,6 +598,18 @@ module adapter(
           osVacFemaleConnector(
             innerDiameter = con[iInnerEndDiameter],
             length = con[iLength],
+            help = help,
+            $fn = $fn);
+        }
+        else if(con[iStyle] == "oneida")
+        {
+          translate([0, 0, con[iLength]+con[iStopLength]])
+          mirror ([0,0,1])
+          OneidaQuickClampConnector(
+            innerEndDiameter = con[iInnerEndDiameter],
+            length = con[iLength],
+            wallThickness = con[iWallThickness],
+            compensate3DPrint = true,  // Enable 3D printing compensation
             help = help,
             $fn = $fn);
         }
