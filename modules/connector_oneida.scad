@@ -1,185 +1,110 @@
+// Oneida Quick Clamp Connector Module
+// Uses profile-based rotate_extrude for seamless geometry
 include <constants.scad>
-use <modules_utility.scad>
-use <modules_pipe.scad>
-include <ub.scad>
 
 /* [Hidden] */
 oneidaVersion = "1.0";
-oneidaBeadHeight = 4.0;  // Standard bead height for Oneida quick clamp
-oneidaMinLength = 1;  // Minimal length - just enough for the bead
-oneidaMeasurement = "inner";  // Oneida duct sizes refer to inner diameter
-oneidaWallThickness = 2.4;
-
-// Standard Oneida quick clamp duct sizes (inner diameter)
-// Common sizes: 4", 5", 6", 7", 8", 10", 12", 14", 16"
-// Default to 4" (101.6mm) inner diameter for testing
-oneidaInnerDiameter = 101.6; // 4 inch inner diameter
-oneidaOuterDiameter = oneidaInnerDiameter + (oneidaWallThickness * 2);
+oneidaMinLength = 1;        // Minimal length to eliminate gaps while preserving geometry
+oneidaMeasurement = "inner";
+oneidaWallThickness = 1.8;
 
 oneidaSettings = ["oneida", [
   [iSettingsLength, oneidaMinLength],
   [iSettingsMeasurement, oneidaMeasurement],
-  // No default diameter - let user specify diameter
   [iSettingsWallThickness, oneidaWallThickness],
   [iSettingsTaper, 0],
-  [iSettingsVersion, oneidaVersion],
-  [iSettingsStopThickness, 0],  // No stop sections for Oneida
-  [iSettingsStopLength, 0]      // No stop length for Oneida
-  ]];
+  [iSettingsVersion, oneidaVersion]
+]];
 
-//OneidaQuickClampConnector();
-
-module OneidaQuickClampConnector(
-  innerEndDiameter = oneidaInnerDiameter,
-  length = 6,  // Use specified length instead of ignoring it
-  wallThickness = oneidaWallThickness,
-  beadDiameter = 6.7,    // Fixed bead diameter (was beadHeight)
-  beadWidth = 5,         // Width along Z axis
-  flatWidth = 1.2,       // Width of flat surface for bed adhesion
-  compensate3DPrint = true,  // Apply 3D printing compensation
-  clearanceFromWall = 6.5,   // Distance from outside of bead to outside wall
-  help,
-  $fn = 64
-){
-  assert(is_num(innerEndDiameter) && innerEndDiameter > 0, "innerEndDiameter must be a number greater than 0");
-  assert(is_num(length) && length > 0, "length must be a number greater than 0");
-  assert(is_num(wallThickness) && wallThickness > 0, "wallThickness must be a number greater than 0");
-  assert(is_num(beadDiameter) && beadDiameter > 0, "beadDiameter must be a number greater than 0");
-  assert(is_num(beadWidth) && beadWidth > 0, "beadWidth must be a number greater than 0");
-  assert(is_num(flatWidth) && flatWidth > 0, "flatWidth must be a number greater than 0");
-  assert(is_num(clearanceFromWall) && clearanceFromWall > 0, "clearanceFromWall must be a number greater than 0");
-
-  // CONSTRAINT RESOLUTION ORDER:
-  // 1. Bead diameter = 6.7mm (radius = 3.35mm)
-  beadRadius = beadDiameter / 2;
-  
-  // 2. Inside of bead = specified inner diameter
-  // Bead center radius = inner radius + bead radius (so inside of bead touches inner wall)
-  beadCenterRadius = innerEndDiameter/2 + beadRadius;
-  
-  // 3. Outside wall = outside of bead - 6.5mm clearance
-  // Outside of bead = bead center + bead radius
-  beadOuterRadius = beadCenterRadius + beadRadius;
-  outerWallRadius = beadOuterRadius - clearanceFromWall;
-  
-  // 4. Inner wall beyond bead compensates to maintain wall thickness
-  // Required inner radius = outer radius - wall thickness
-  compensatedInnerRadius = outerWallRadius - wallThickness;
-  compensatedInnerDiameter = compensatedInnerRadius * 2;
-  
-  echo("OneidaQuickClampConnector CONSTRAINTS:");
-  echo("  1. beadDiameter =", beadDiameter, "beadRadius =", beadRadius);
-  echo("  2. innerEndDiameter =", innerEndDiameter, "beadCenterRadius =", beadCenterRadius);
-  echo("  3. beadOuterRadius =", beadOuterRadius, "outerWallRadius =", outerWallRadius);
-  echo("  4. compensatedInnerDiameter =", compensatedInnerDiameter, "wallThickness =", wallThickness);
-  echo("  Clearance check:", beadOuterRadius - outerWallRadius, "should equal", clearanceFromWall);
-
-  union() {
-    // Main pipe body - use compensated inner diameter to maintain proper wall thickness
-    Pipe (
-      diameter1 = compensatedInnerDiameter,
-      diameter2 = compensatedInnerDiameter,
-      length = length,
-      wallThickness1 = wallThickness,
-      wallThickness2 = wallThickness); 
-      
-    // Bead positioned at the very edge of the connector
-    // Inside of bead exactly at specified inner diameter
-    translate([0, 0, length - beadWidth/2])  // Position bead at connector end
-    rotate_extrude($fn = $fn) {
-      translate([beadCenterRadius, 0, 0]) {  // Position based on constraint resolution
-        circle(r = beadRadius, $fn = 16);
-      }
+module OneidaQuickClampConnector(innerEndDiameter, length = 25, wallThickness = 1.8, compensate3DPrint = true, help = false, $fn = 128) {
+    // Oneida Quick Clamp specifications
+    beadDiameter = 6.7;
+    clearanceDistance = 6.5;
+    beadWidth = 3.5;
+    // Use parameter instead of overwriting it
+    
+    // Calculations
+    beadRadius = beadDiameter / 2;  // 3.35mm
+    beadInnerRadius = innerEndDiameter / 2;
+    beadCenterRadius = beadInnerRadius + beadRadius;
+    beadOuterRadius = beadInnerRadius + beadDiameter;
+    outerWallRadius = beadOuterRadius - clearanceDistance;
+    innerWallRadius = outerWallRadius - wallThickness;
+    
+    // Position bead at top
+    beadCenterZ = length - beadWidth/2;
+    
+    // Calculate the actual wall height - from bottom to bottom of bead
+    wallHeight = beadCenterZ - beadRadius;  // Stop where bead starts
+    
+    // Calculate where wall should be positioned 
+    wallTopZ = wallHeight;  // Wall ends where bead begins
+    wallBottomZ = 0;        // Wall starts at bottom
+    
+    // Calculate transition polygon points
+    // Start at top left corner of rectangle (where wall ends)
+    point1_x = innerWallRadius;
+    point1_y = wallHeight;  // Top of wall, not bead center
+    
+    // Calculate tangent to bead circle from point1
+    // Vector from point1 to bead center
+    dx = beadCenterRadius - point1_x;
+    dy = beadCenterZ - point1_y;  // This will be 0 since they're at same Y
+    distToCenter = sqrt(dx*dx + dy*dy);
+    
+    // For tangent line going +x +y direction to TOP LEFT quadrant of circle
+    tangentAngle = asin(beadRadius / distToCenter);
+    centerAngle = atan2(dy, dx);
+    
+    // TOP LEFT quadrant - SUBTRACT the tangent angle and adjust to left side
+    tangentPointAngle = centerAngle - tangentAngle + 180;  
+    point2_x = beadCenterRadius + beadRadius * cos(tangentPointAngle);
+    point2_y = beadCenterZ + beadRadius * sin(tangentPointAngle);
+    
+    // Point 3: Bottom of bead circle (coincident with circle)
+    point3_x = beadCenterRadius;  // At circle center X
+    point3_y = beadCenterZ - beadRadius;  // At bottom of circle
+    
+    // Point 4: straight left to same X as starting point
+    point4_x = point1_x;
+    point4_y = point3_y;
+    
+    // Create the 3D connector using rotate_extrude
+    rotate_extrude() {
+        // Rotate profile 180 degrees to fix inversion
+        rotate([0, 0, 180]) {
+            // Main bead circle with printing flat
+            difference() {
+                translate([beadCenterRadius, beadCenterZ])
+                circle(r = beadRadius);
+                
+                // Printing flat - 1.2mm wide across TOP (+Y side) of circle
+                translate([0, beadCenterZ + beadRadius - 1.2])
+                square([beadCenterRadius + beadRadius + 1, 1.2]);
+            }
+            
+            // Wall rectangle - only extends to where bead starts
+            translate([innerWallRadius, 0])
+            square([wallThickness, wallHeight]);
+            
+            // Seamless transition polygon with flat incorporated
+            difference() {
+                polygon([
+                    [point1_x, point1_y],  // Top left corner of rectangle
+                    [point2_x, point2_y],  // Tangent point to bead circle
+                    [point3_x, point3_y],  // Bottom of bead circle
+                    [point4_x, point4_y]   // Back to same X as start
+                ]);
+                
+                // Remove the printing flat from transition polygon too
+                translate([0, beadCenterZ + beadRadius - 1.2])
+                square([beadCenterRadius + beadRadius + 1, 1.2]);
+            }
+        } // End of rotate([0, 0, 180])
     }
-  }
-  
-  HelpTxt("OneidaQuickClampConnector",[
-    "innerEndDiameter", innerEndDiameter,
-    "compensatedInnerDiameter", compensatedInnerDiameter,
-    "length", length,
-    "wallThickness", wallThickness,
-    "compensate3DPrint", compensate3DPrint,
-    "clearanceFromWall", clearanceFromWall,
-    "beadDiameter", beadDiameter,
-    "beadWidth", beadWidth,
-    "flatWidth", flatWidth,
-    "outerWallRadius", outerWallRadius,
-    "beadCenterRadius", beadCenterRadius
-    ], help);
 }
 
-module OneidaQuickClampBead(
-  innerDiameter,
-  wallThickness,
-  beadHeight = 4.0,  // Increased for more prominent bead
-  beadWidth = 5,     // Increased width for more prominent bead
-  flatWidth = 1.2,  // Width of flat surface for bed adhesion
-  compensate3DPrint = true,  // Apply 3D printing compensation
-  clearanceFromWall = 2.5,   // Reduced clearance to allow larger beads with thin walls
-  help,
-  $fn = 64
-){
-  assert(is_num(innerDiameter) && innerDiameter > 0, "innerDiameter must be a number greater than 0");
-  assert(is_num(wallThickness) && wallThickness > 0, "wallThickness must be a number greater than 0");
-  assert(is_num(beadHeight) && beadHeight > 0, "beadHeight must be a number greater than 0");
-  assert(is_num(beadWidth) && beadWidth > 0, "beadWidth must be a number greater than 0");
-  assert(is_num(flatWidth) && flatWidth > 0, "flatWidth must be a number greater than 0");
-  assert(is_num(clearanceFromWall) && clearanceFromWall > 0, "clearanceFromWall must be a number greater than 0");
-
-  // 3D printing compensation calculations
-  sheetMetalWallThickness = 0.2;  // Oneida sheet metal thickness
-  // Use actual wallThickness parameter instead of hardcoded typical value
-  wallCompensation = compensate3DPrint ? (wallThickness - sheetMetalWallThickness) * 2 : 0;
-  
-  // Adjust inner diameter for thicker 3D printed walls
-  adjustedInnerDiameter = innerDiameter - wallCompensation;
-  
-  outerDiameter = adjustedInnerDiameter + wallThickness * 2;
-  
-  // Calculate maximum bead radius to maintain clearance from outer wall
-  // The bead extends from the inner wall, so max bead diameter = outerDiameter - clearanceFromWall
-  // This gives us the available space for the bead
-  maxBeadDiameter = outerDiameter - clearanceFromWall;
-  maxBeadRadius = (maxBeadDiameter - adjustedInnerDiameter) / 2;
-  
-  // Use the smaller of requested bead height or maximum possible
-  adjustedBeadHeight = compensate3DPrint ? min(beadHeight, maxBeadRadius) : beadHeight;
-  
-  // Ensure we have a minimum bead size even if clearance is tight
-  finalBeadRadius = max(adjustedBeadHeight, 0.5);  // Minimum 0.5mm bead
-  
-  beadRadius = finalBeadRadius;
-  // Position bead so inner edge is tangent to inner wall and center is at the pipe end
-  beadCenterRadius = adjustedInnerDiameter/2 + beadRadius;  // Bead center radius for inner edge tangency
-  beadCenterZ = 0;  // Center at Z=0 so bead extends both above and below
-  
-  echo("OneidaQuickClampBead", innerDiameter=innerDiameter, adjustedInnerDiameter=adjustedInnerDiameter, outerDiameter=outerDiameter);
-  echo("OneidaQuickClampBead", beadHeight=beadHeight, adjustedBeadHeight=adjustedBeadHeight, finalBeadRadius=finalBeadRadius, beadWidth=beadWidth);
-  echo("OneidaQuickClampBead", wallCompensation=wallCompensation, clearanceFromWall=clearanceFromWall, maxBeadRadius=maxBeadRadius);
-  echo("OneidaQuickClampBead", beadCenterRadius=beadCenterRadius, beadCenterZ=beadCenterZ, flatWidth=flatWidth);
-
-  union() {
-    // Rounded portion of the bead (torus shape)
-    translate([0, 0, beadCenterZ])
-    rotate_extrude($fn = $fn) {
-      translate([beadCenterRadius, 0, 0]) {
-        circle(r = beadRadius, $fn = 16);
-      }
-    }
-  }
-  
-  HelpTxt("OneidaQuickClampBead",[
-    "innerDiameter", innerDiameter,
-    "adjustedInnerDiameter", adjustedInnerDiameter,
-    "wallThickness", wallThickness,
-    "beadHeight", beadHeight,
-    "adjustedBeadHeight", adjustedBeadHeight,
-    "beadWidth", beadWidth,
-    "beadRadius", beadRadius,
-    "flatWidth", flatWidth,
-    "wallCompensation", wallCompensation,
-    "clearanceFromWall", clearanceFromWall,
-    "beadCenterRadius", beadCenterRadius,
-    "beadCenterZ", beadCenterZ
-    ], help);
+// Test with 7-inch inner diameter
+if (false) {  // Set to true to test
+    OneidaQuickClampConnector(innerEndDiameter = 177.8, length = 25);
 }
