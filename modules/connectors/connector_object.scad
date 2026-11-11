@@ -424,11 +424,17 @@ function getConnectorSettings(
       (style == "nozzle" && d == 0) ? con1OuterEndDiameter : d,
     conWallThickness = let(w = retrieveConnectorSetting(style, iSettingsWallThickness, wallThickness))
       (style == "nozzle" && w == 0) ? con1WallThickness : w,
-    conLength = let( l = retrieveConnectorSetting(style, iSettingsLength, _length))
+    conLength = let(l = retrieveConnectorSetting(style, iSettingsLength, _length))
       (style == "mag") ? max(l, magnetFlangeThickness)
-      : (style == "flange") ? max(l, flangeThickness) : l,
+      : (style == "flange") ? max(l, flangeThickness)
+      : (style == "oneida") ? assert(l >= oneidaQuickClampMinimumLength(),
+          str("Oneida quick-clamp length must be at least ", oneidaQuickClampMinimumLength(), "mm"))
+        l
+      : l,
     conTaper = let(t = (style == "nozzle") ? 0 : retrieveConnectorSetting(style, iSettingsTaper, taper)) conMeasurement == "inner" ? t*-1 : t,
-    conInnerDiameter = conMeasurement == "inner" ? conDiameter : conDiameter - conWallThickness * 2,
+    conInnerDiameter = style == "oneida"
+      ? oneidaQuickClampNeckInnerDiameter(nominalInnerDiameter = conDiameter, wallThickness = conWallThickness)
+      : conMeasurement == "inner" ? conDiameter : conDiameter - conWallThickness * 2,
     conInnerStartDiameter = conInnerDiameter - conTaper / 2,
     conOuterStartDiameter = conInnerStartDiameter + wallThickness*2,
     conInnerEndDiameter = conInnerDiameter + conTaper / 2,

@@ -106,8 +106,23 @@ HoseAdapter(
 | `"dw735"` | DeWalt DW735 planer dust port adapter |
 | `"kobalt"` | Kobalt saw dust outlet female socket with recessed ring channels |
 | `"rigid_nxt"` | Rigid NXT shop vac hose connector with locking ridges |
+| `"oneida"` | Oneida quick-clamp connector profile |
 | `"nozzle"` | Crevice tool, wide nozzle, or utility vacuum nozzle |
 | `"none"` | Open or flat end |
+
+---
+
+### Oneida quick-clamp dimensional caveat
+- `style = "oneida"` forces `measurement = "inner"` and `taper = 0`.
+- `diameter` is the bead's inner-edge diameter, not its overall outside diameter. For a measured outside diameter, subtract twice the bead cross-section before calling the extension.
+- The circular bead cross-section is calibrated to `5.58mm`; its outer offset to the neck remains `6.5mm`. Neck OD is `beadOutsideDiameter - 13mm`, and neck ID subtracts twice the wall thickness.
+- The wye's measured `136mm` outside bead diameter requires `diameter = 124.84mm`. With wall `2.4mm`, neck OD is `123mm` and neck ID is `118.2mm`.
+- Caller wall thickness is honored for every connector position; the standalone fit ring and assembled adapter use the same bore calculation.
+- Uses the original `OneidaQuickClampConnector` extension from `feature/oneida-quickclamp`, with its circular outer bead profile at `length - beadWidth/2`.
+- The host places that bead at the open connector end. The wye and fit ring share the same profile and are translated onto the print bed without trimming the bead.
+- The inner pipe lip extends by `oneidaQuickClampTipOverhang()` so its bottom face shares the bead's tangent print-bed plane; bead diameter, outer profile, and placement remain unchanged.
+- A full-height annular web joins the inward side of the bead to the flange. Its faces lie at the bead's top and bottom tangent planes; the bore and outer clamp-contact curve are unchanged.
+- The extension's minimum neck length is `1mm`; the wye uses a `20mm` neck.
 
 ---
 

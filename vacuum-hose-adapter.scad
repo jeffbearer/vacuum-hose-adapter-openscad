@@ -16,7 +16,7 @@ include <modules/vacuum-hose-adapter.scad>
 End1_Wall_Thickness = 2; //0.01
 //The style of the end
 End1_Style="hose"; // [hose: Hose connector, mag: Magnetic Flange, flange: Flange, osvacm:osVAC Male, osvacf:osVAC Female]
-End1_Specialised_Style="disabled"; // [disabled:Disabled, dyson: Dyson connector, camlock: CAMLOCK connetor, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32, makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
+End1_Specialised_Style="disabled"; // [disabled:Disabled, dyson: Dyson connector, camlock: CAMLOCK connetor, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32, makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, oneida: Oneida quick-clamp, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
 // Is the measurement the adapter's outside or inside diameter?
 End1_Measurement = "outer"; //[inner, outer]
 // End 1 diameter of the adapter (mm, inch)
@@ -159,7 +159,7 @@ Transition_Base_Angle=0;
 //Wall thickness
 End2_Wall_Thickness = 2; //0.01
 End2_Style="hose"; // [hose: Hose connector, mag: Magnetic Flange, flange: Flange, nozzle: Nozzle attachment, osvacm:osVAC Male, osvacf:osVAC Female, none: None]
-End2_Specialised_Style="disabled"; // [disabled:Disabled, dyson: Dyson connector, camlock: CAMLOCK connector, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32,  makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
+End2_Specialised_Style="disabled"; // [disabled:Disabled, dyson: Dyson connector, camlock: CAMLOCK connector, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32,  makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, oneida: Oneida quick-clamp, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
 
 // Is the measurement the adapter's outside or inside diameter?
 End2_Measurement = "outer"; //[inner, outer]
@@ -270,7 +270,7 @@ End2_Nozzle_Chamfer_Angle = 0; //0.1
 //Wall thickness
 End3_Wall_Thickness = 2; //0.01
 End3_Style="hose"; // [hose: Hose connector, mag: Magnetic Flange, flange: Flange, nozzle: Nozzle attachement, osvacm:osVAC Male, osvacf:osVAC Female, none: None]
-End3_Specialised_Style="disabled"; // [disabled:Disabled, dyson: Dyson connector, camlock: CAMLOCK connector, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32,  makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
+End3_Specialised_Style="disabled"; // [disabled:Disabled, dyson: Dyson connector, camlock: CAMLOCK connector, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32,  makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, oneida: Oneida quick-clamp, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
 
 // Is the measurement the adapter's outside or inside diameter?
 End3_Measurement = "outer"; //[inner, outer]

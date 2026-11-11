@@ -157,7 +157,7 @@ $ScadScriptFolders |ForEach-Object {
     $TargetFile = $_
     if($TargetFile.BaseName -ieq 'vacuum-hose-adapter'){
 
-        $styles = @('mag', 'flange', 'hose', 'dyson', 'camlock', 'dw735', 'centec_female', 'centec_male', 'osvacm32', 'osvacm', 'osvacf32', 'osvacf', 'makita_male', 'bosch_sander', 'festoolcleanteclug')
+        $styles = @('mag', 'flange', 'hose', 'dyson', 'camlock', 'dw735', 'centec_female', 'centec_male', 'osvacm32', 'osvacm', 'osvacf32', 'osvacf', 'makita_male', 'bosch_sander', 'festoolcleanteclug', 'oneida')
 
         $styles | ForEach-Object {
             $style = $_
@@ -174,6 +174,11 @@ $ScadScriptFolders |ForEach-Object {
         }
     }
 }}
+
+$settingsTest = Get-Item -LiteralPath (Join-Path $PSScriptRoot 'tests/oneida-settings.scad')
+if (-not (Test-OpenSCAD -TargetFile $settingsTest)) {
+    $failed = $true
+}
 
 if ($failed) {
     throw "OpenSCAD validation failed"

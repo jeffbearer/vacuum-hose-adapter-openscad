@@ -1,6 +1,6 @@
 ///////////////////////////////////////
-//Combined version of 'vacuum-hose-adapter.scad'. Generated 2026-08-15 23:04
-//Content hash 9189A319B2E3DE7450C8EB77789A99101020D0AB734EA483551DB59E077F8AF2
+//Combined version of 'vacuum-hose-adapter.scad'. Generated 2026-11-10 21:00
+//Content hash F50C830D799D1A69FE0854F56577C2F382406A3AFA32B09FC89A417F96027D38
 ///////////////////////////////////////
 // Hose connector
 // version 2024-04-30
@@ -19,7 +19,7 @@
 End1_Wall_Thickness = 2; //0.01
 //The style of the end
 End1_Style="hose"; // [hose: Hose connector, mag: Magnetic Flange, flange: Flange, osvacm:osVAC Male, osvacf:osVAC Female]
-End1_Specialised_Style="disabled"; // [disabled:Disabled, dyson: Dyson connector, camlock: CAMLOCK connetor, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32, makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
+End1_Specialised_Style="disabled"; // [disabled:Disabled, dyson: Dyson connector, camlock: CAMLOCK connetor, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32, makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, oneida: Oneida quick-clamp, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
 // Is the measurement the adapter's outside or inside diameter?
 End1_Measurement = "outer"; //[inner, outer]
 // End 1 diameter of the adapter (mm, inch)
@@ -162,7 +162,7 @@ Transition_Base_Angle=0;
 //Wall thickness
 End2_Wall_Thickness = 2; //0.01
 End2_Style="hose"; // [hose: Hose connector, mag: Magnetic Flange, flange: Flange, nozzle: Nozzle attachment, osvacm:osVAC Male, osvacf:osVAC Female, none: None]
-End2_Specialised_Style="disabled"; // [disabled:Disabled, dyson: Dyson connector, camlock: CAMLOCK connector, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32,  makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
+End2_Specialised_Style="disabled"; // [disabled:Disabled, dyson: Dyson connector, camlock: CAMLOCK connector, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32,  makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, oneida: Oneida quick-clamp, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
 
 // Is the measurement the adapter's outside or inside diameter?
 End2_Measurement = "outer"; //[inner, outer]
@@ -273,7 +273,7 @@ End2_Nozzle_Chamfer_Angle = 0; //0.1
 //Wall thickness
 End3_Wall_Thickness = 2; //0.01
 End3_Style="hose"; // [hose: Hose connector, mag: Magnetic Flange, flange: Flange, nozzle: Nozzle attachement, osvacm:osVAC Male, osvacf:osVAC Female, none: None]
-End3_Specialised_Style="disabled"; // [disabled:Disabled, dyson: Dyson connector, camlock: CAMLOCK connector, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32,  makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
+End3_Specialised_Style="disabled"; // [disabled:Disabled, dyson: Dyson connector, camlock: CAMLOCK connector, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32,  makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, oneida: Oneida quick-clamp, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
 
 // Is the measurement the adapter's outside or inside diameter?
 End3_Measurement = "outer"; //[inner, outer]
@@ -714,6 +714,15 @@ module adapter(
           translate([0, 0, con[iLength]])
           mirror ([0,0,1])
           FestoolCleantecLugConnector(
+            help = help,
+            $fn = $fn);
+        }
+        else if(con[iStyle] == "oneida")
+        {
+          OneidaQuickClampConnector(
+            innerEndDiameter = con[iDiameter],
+            length = con[iLength],
+            wallThickness = con[iWallThickness],
             help = help,
             $fn = $fn);
         }
@@ -4953,7 +4962,7 @@ if(slipring_demo){
     ring_width = 5,
     slip_clearance = 0.1,
     rounded_clearance = true,
-    taper = "notaper", //notaper, inner, outer
+    taper = "notaper" //notaper, inner, outer
     );
 
   color("lightblue")
@@ -4963,7 +4972,7 @@ if(slipring_demo){
     ring_width = 5,
     slip_clearance = 0.1,
     rounded_clearance = false,
-    taper = "inner", //notaper, inner, outer
+    taper = "inner" //notaper, inner, outer
     );
 
   color("pink")
@@ -4973,7 +4982,7 @@ if(slipring_demo){
     ring_width = 5,
     slip_clearance = 0.1,
     rounded_clearance = false,
-    taper = "outer", //notaper, inner, outer
+    taper = "outer" //notaper, inner, outer
     );
 }
 
@@ -5040,7 +5049,7 @@ module slipring_profile(
   width = 5,
   tolerance = 0.3,
   rounded_clearance = true,
-  taper = "inner", //disabled, inner, outer
+  taper = "inner" //disabled, inner, outer
 ){
 
   function splitring_profile_points(dimension, angled_dimension, split_taper) = [
@@ -5170,6 +5179,7 @@ module slipring(
 }
 //CombinedEnd from path modules_slipring.scad
 //Combined from path connectors.scad
+
 
 
 
@@ -5625,11 +5635,17 @@ function getConnectorSettings(
       (style == "nozzle" && d == 0) ? con1OuterEndDiameter : d,
     conWallThickness = let(w = retrieveConnectorSetting(style, iSettingsWallThickness, wallThickness))
       (style == "nozzle" && w == 0) ? con1WallThickness : w,
-    conLength = let( l = retrieveConnectorSetting(style, iSettingsLength, _length))
+    conLength = let(l = retrieveConnectorSetting(style, iSettingsLength, _length))
       (style == "mag") ? max(l, magnetFlangeThickness)
-      : (style == "flange") ? max(l, flangeThickness) : l,
+      : (style == "flange") ? max(l, flangeThickness)
+      : (style == "oneida") ? assert(l >= oneidaQuickClampMinimumLength(),
+          str("Oneida quick-clamp length must be at least ", oneidaQuickClampMinimumLength(), "mm"))
+        l
+      : l,
     conTaper = let(t = (style == "nozzle") ? 0 : retrieveConnectorSetting(style, iSettingsTaper, taper)) conMeasurement == "inner" ? t*-1 : t,
-    conInnerDiameter = conMeasurement == "inner" ? conDiameter : conDiameter - conWallThickness * 2,
+    conInnerDiameter = style == "oneida"
+      ? oneidaQuickClampNeckInnerDiameter(nominalInnerDiameter = conDiameter, wallThickness = conWallThickness)
+      : conMeasurement == "inner" ? conDiameter : conDiameter - conWallThickness * 2,
     conInnerStartDiameter = conInnerDiameter - conTaper / 2,
     conOuterStartDiameter = conInnerStartDiameter + wallThickness*2,
     conInnerEndDiameter = conInnerDiameter + conTaper / 2,
@@ -7146,7 +7162,7 @@ module MagneticConnector(
     alignmentSideClearance,
     alignmentDepthClearance,
     twistLockSize,
-    roundover = true,
+    roundover = true
 )
 {
     assert(is_num(innerStartDiameter) && innerStartDiameter > 0, "innerStartDiameter must be a number greater than 0");
@@ -9759,6 +9775,188 @@ module MakitaMaleConnector(
   }
 }
 //CombinedEnd from path connector_makita.scad
+//Combined from path connector_oneida.scad
+
+
+
+
+
+
+
+
+
+/* Hidden */
+oneidaVersion = "1.0";
+oneidaBeadHeight = 4.0;
+oneidaMinLength = 1;
+oneidaMeasurement = "inner";
+oneidaWallThickness = 2.4;
+oneidaInnerDiameter = 101.6;
+oneidaBeadDiameter = 5.58;
+oneidaBeadWidth = 5;
+oneidaClearanceFromWall = 6.5;
+
+oneidaSettings = ["oneida", [
+  [iSettingsMeasurement, oneidaMeasurement],
+  [iSettingsTaper, 0],
+  [iSettingsVersion, oneidaVersion]
+  ]];
+
+function oneidaQuickClampMinimumLength(
+  beadDiameter = oneidaBeadDiameter,
+  beadWidth = oneidaBeadWidth
+) = oneidaMinLength;
+
+function oneidaQuickClampNeckOuterDiameter(
+  nominalInnerDiameter = oneidaInnerDiameter,
+  wallThickness = oneidaWallThickness
+) = nominalInnerDiameter + (oneidaBeadDiameter - oneidaClearanceFromWall) * 2;
+
+function oneidaQuickClampNeckInnerDiameter(
+  nominalInnerDiameter = oneidaInnerDiameter,
+  wallThickness = oneidaWallThickness
+) = oneidaQuickClampNeckOuterDiameter(nominalInnerDiameter = nominalInnerDiameter, wallThickness = wallThickness)
+    - wallThickness * 2;
+
+function oneidaQuickClampTipOverhang(
+  beadDiameter = oneidaBeadDiameter,
+  beadWidth = oneidaBeadWidth
+) = max(0, (beadDiameter - beadWidth) / 2);
+
+module OneidaQuickClampConnector(
+  innerEndDiameter = oneidaInnerDiameter,
+  length = 6,
+  wallThickness = oneidaWallThickness,
+  beadDiameter = oneidaBeadDiameter,
+  beadWidth = oneidaBeadWidth,
+  flatWidth = 1.2,
+  compensate3DPrint = true,
+  clearanceFromWall = oneidaClearanceFromWall,
+  help,
+  $fn = 64
+){
+  assert(is_num(innerEndDiameter) && innerEndDiameter > 0, "innerEndDiameter must be a number greater than 0");
+  assert(is_num(length) && length > 0, "length must be a number greater than 0");
+  assert(is_num(wallThickness) && wallThickness > 0, "wallThickness must be a number greater than 0");
+  assert(is_num(beadDiameter) && beadDiameter > 0, "beadDiameter must be a number greater than 0");
+  assert(is_num(beadWidth) && beadWidth > 0, "beadWidth must be a number greater than 0");
+  assert(is_num(flatWidth) && flatWidth > 0, "flatWidth must be a number greater than 0");
+  assert(is_num(clearanceFromWall) && clearanceFromWall > 0, "clearanceFromWall must be a number greater than 0");
+
+  beadRadius = beadDiameter / 2;
+  beadCenterRadius = innerEndDiameter / 2 + beadRadius;
+  beadOuterRadius = beadCenterRadius + beadRadius;
+  outerWallRadius = beadOuterRadius - clearanceFromWall;
+  compensatedInnerRadius = outerWallRadius - wallThickness;
+  compensatedInnerDiameter = compensatedInnerRadius * 2;
+  // Align the inner lip with the bead's tangent plane without changing the bead.
+  lipLength = length + oneidaQuickClampTipOverhang(beadDiameter, beadWidth);
+
+  echo("OneidaQuickClampConnector CONSTRAINTS:");
+  echo("  1. beadDiameter =", beadDiameter, "beadRadius =", beadRadius);
+  echo("  2. innerEndDiameter =", innerEndDiameter, "beadCenterRadius =", beadCenterRadius);
+  echo("  3. beadOuterRadius =", beadOuterRadius, "outerWallRadius =", outerWallRadius);
+  echo("  4. compensatedInnerDiameter =", compensatedInnerDiameter, "wallThickness =", wallThickness);
+  echo("  Clearance check:", beadOuterRadius - outerWallRadius, "should equal", clearanceFromWall);
+
+  union() {
+    pipe(
+      diameter1 = compensatedInnerDiameter,
+      diameter2 = compensatedInnerDiameter,
+      length = lipLength,
+      wallThickness1 = wallThickness,
+      wallThickness2 = wallThickness);
+
+    // Back the bead to its centerline so the flange faces meet both horizontal tangents.
+    pipe(
+      diameter = compensatedInnerDiameter,
+      length = beadDiameter,
+      wallThickness = max(wallThickness, beadCenterRadius - compensatedInnerRadius),
+      zPosition = length - beadWidth / 2 - beadRadius);
+
+    translate([0, 0, length - beadWidth / 2])
+    rotate_extrude($fn = $fn) {
+      translate([beadCenterRadius, 0, 0]) {
+        circle(r = beadRadius, $fn = 16);
+      }
+    }
+  }
+
+  HelpTxt("OneidaQuickClampConnector",[
+    "innerEndDiameter", innerEndDiameter,
+    "compensatedInnerDiameter", compensatedInnerDiameter,
+    "length", length,
+    "wallThickness", wallThickness,
+    "compensate3DPrint", compensate3DPrint,
+    "clearanceFromWall", clearanceFromWall,
+    "beadDiameter", beadDiameter,
+    "beadWidth", beadWidth,
+    "flatWidth", flatWidth,
+    "outerWallRadius", outerWallRadius,
+    "beadCenterRadius", beadCenterRadius
+    ], help);
+}
+
+module OneidaQuickClampBead(
+  innerDiameter,
+  wallThickness,
+  beadHeight = oneidaBeadHeight,
+  beadWidth = oneidaBeadWidth,
+  flatWidth = 1.2,
+  compensate3DPrint = true,
+  clearanceFromWall = 2.5,
+  help,
+  $fn = 64
+){
+  assert(is_num(innerDiameter) && innerDiameter > 0, "innerDiameter must be a number greater than 0");
+  assert(is_num(wallThickness) && wallThickness > 0, "wallThickness must be a number greater than 0");
+  assert(is_num(beadHeight) && beadHeight > 0, "beadHeight must be a number greater than 0");
+  assert(is_num(beadWidth) && beadWidth > 0, "beadWidth must be a number greater than 0");
+  assert(is_num(flatWidth) && flatWidth > 0, "flatWidth must be a number greater than 0");
+  assert(is_num(clearanceFromWall) && clearanceFromWall > 0, "clearanceFromWall must be a number greater than 0");
+
+  sheetMetalWallThickness = 0.2;
+  wallCompensation = compensate3DPrint ? (wallThickness - sheetMetalWallThickness) * 2 : 0;
+  adjustedInnerDiameter = innerDiameter - wallCompensation;
+  outerDiameter = adjustedInnerDiameter + wallThickness * 2;
+  maxBeadDiameter = outerDiameter - clearanceFromWall;
+  maxBeadRadius = (maxBeadDiameter - adjustedInnerDiameter) / 2;
+  adjustedBeadHeight = compensate3DPrint ? min(beadHeight, maxBeadRadius) : beadHeight;
+  finalBeadRadius = max(adjustedBeadHeight, 0.5);
+  beadRadius = finalBeadRadius;
+  beadCenterRadius = adjustedInnerDiameter / 2 + beadRadius;
+  beadCenterZ = 0;
+
+  echo("OneidaQuickClampBead", innerDiameter = innerDiameter, adjustedInnerDiameter = adjustedInnerDiameter, outerDiameter = outerDiameter);
+  echo("OneidaQuickClampBead", beadHeight = beadHeight, adjustedBeadHeight = adjustedBeadHeight, finalBeadRadius = finalBeadRadius, beadWidth = beadWidth);
+  echo("OneidaQuickClampBead", wallCompensation = wallCompensation, clearanceFromWall = clearanceFromWall, maxBeadRadius = maxBeadRadius);
+  echo("OneidaQuickClampBead", beadCenterRadius = beadCenterRadius, beadCenterZ = beadCenterZ, flatWidth = flatWidth);
+
+  union() {
+    translate([0, 0, beadCenterZ])
+    rotate_extrude($fn = $fn) {
+      translate([beadCenterRadius, 0, 0]) {
+        circle(r = beadRadius, $fn = 16);
+      }
+    }
+  }
+
+  HelpTxt("OneidaQuickClampBead",[
+    "innerDiameter", innerDiameter,
+    "adjustedInnerDiameter", adjustedInnerDiameter,
+    "wallThickness", wallThickness,
+    "beadHeight", beadHeight,
+    "adjustedBeadHeight", adjustedBeadHeight,
+    "beadWidth", beadWidth,
+    "beadRadius", beadRadius,
+    "flatWidth", flatWidth,
+    "wallCompensation", wallCompensation,
+    "clearanceFromWall", clearanceFromWall,
+    "beadCenterRadius", beadCenterRadius,
+    "beadCenterZ", beadCenterZ
+    ], help);
+}
+//CombinedEnd from path connector_oneida.scad
 //Combined from path connector_osvac.scad
 
 
@@ -10168,6 +10366,7 @@ connectorSettings =[
   makitaMaleSettings,
   boschSanderSettings,
   festoolCleantecLugSettings,
+  oneidaSettings,
   rigidNxtSettings,
   kobaltSettings,
   ];

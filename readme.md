@@ -21,6 +21,43 @@ Official availability
 Official documentation
 - https://docs.ostat.com/docs/openscad/hose-adapter
 
+## Oneida 5-inch quick-clamp wye
+
+Open [oneida-quick-clamp-wye.scad](oneida-quick-clamp-wye.scad) for a 5-inch
+Oneida inlet, a centered 4-inch hose spigot, and a 2.5-inch hose spigot branching
+at 45 degrees toward the hose side. Both hose ports have smooth clamp lands
+(50 mm inline, 45 mm on the branch) and 3 mm walls.
+
+The hose diameters are **outside** diameters: 101.6 mm and 63.5 mm by default.
+Measure the hose inside diameters and adjust `Inline_Diameter`,
+`Branch_Diameter`, or the corresponding fit adjustments before printing.
+The Oneida end uses the original connector extension from
+`feature/oneida-quickclamp`, calibrated to the measured **136 mm overall bead
+diameter** and **5.58 mm circular bead cross-section**, with 6.5 mm radial
+clearance to the neck. `Oneida_Bead_Outside_Diameter` controls the measured
+outside size; setting it to 0 uses `Oneida_Diameter` as the bead's inner-edge
+diameter instead. The bead is at the open inlet end, not the
+body end. Its outer clamp-contact curve is unchanged; a solid annular web
+backs its inward side to the flange, with horizontal top and bottom faces
+tangent to the bead.
+The inner lip extends to the bead's lowest plane (0.29 mm farther with the
+default bead) so both start on the print bed.
+The full wye uses the same Oneida interface as the successfully fitted
+[136 mm test ring](samples/oneida_5in_quick_clamp_fit_ring_136mm.stl).
+Select `Part = "oneida-fit-ring"` to check your clamp first, or
+`Part = "hose-fit-rings"` to check both hose fits. This model and its fit rings
+work with OpenSCAD 2021.01 or newer; other library features may require a
+development snapshot.
+
+The ready-to-slice [adapter STL](samples/oneida_5in_to_4in_2p5in_wye.stl) is
+approximately 205 x 136 x 174 mm with the Oneida end on the bed. Also available:
+[Oneida fit ring](samples/oneida_5in_quick_clamp_fit_ring.stl),
+[hose fit rings](samples/oneida_4in_2p5in_hose_fit_rings.stl), and a
+[preview](samples/oneida_5in_to_4in_2p5in_wye.png). The
+[combined script](combined/oneida-quick-clamp-wye.scad) needs no separate library files.
+The [all-in-one test-ring STL](samples/oneida_5in_4in_2p5in_test_rings.stl)
+nests the current 5-inch Oneida, 4-inch, and 2.5-inch rings on one print bed.
+
 ## Connection types
 
 Three different types of connections are possible to maximize the number of
