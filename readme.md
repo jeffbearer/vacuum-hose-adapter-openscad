@@ -35,7 +35,9 @@ Intended for connection between two hoses or a hose and a tool exhaust.
 * Taper: the hose connection can be tapered to allow for a tighter fit.
 
 ### Oneida quick-clamp connection
-Intended for Oneida-style quick-clamp ports using nominal inch sizes.
+Compatible with Oneida Quick-Clamp ducting using nominal inch sizes.
+An external quick clamp captures the printed beaded rim to join it to mating
+ductwork. The clamp is separate hardware and is not printed by this module.
 
 #### Main settings
 * Style: `oneida`

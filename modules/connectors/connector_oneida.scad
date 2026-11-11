@@ -1,3 +1,6 @@
+// Compatible with Oneida Quick-Clamp ducting using nominal inch sizes.
+// An external quick clamp captures the printed beaded rim to join it to mating ductwork.
+// The clamp is separate hardware and is not printed by this module.
 include <../constants.scad>
 use <../thirdparty/ub.scad>
 use <../modules_utility.scad>
