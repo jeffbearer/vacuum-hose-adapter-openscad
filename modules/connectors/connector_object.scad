@@ -54,9 +54,10 @@ iExtensionStopThickness=iExtensionSlipRingSupportSpacing+1;
 iExtensionStopLength=iExtensionStopThickness+1;
 iExtensionStopSymmetrical=iExtensionStopLength+1;
 iAlignmentRing=iExtensionStopSymmetrical+1;
+iOneidaFitAdjustment=iAlignmentRing+1;
 
 //end of user connector settings
-iAlignmentDepth=iAlignmentRing+1;
+iAlignmentDepth=iOneidaFitAdjustment+1;
 iAlignmentUpperWidth=iAlignmentDepth+1;
 iAlignmentLowerWidth=iAlignmentUpperWidth+1;
 iAlignmentSideClearance=iAlignmentLowerWidth+1;
@@ -74,7 +75,7 @@ iInterfaceLength=iInterfaceWallThickness+1;
 iExtensionTaperLength=iInterfaceLength+1;
 iExtensionTotalLength=iExtensionTaperLength+1;
 
-userSettingsLength = iAlignmentRing+1;
+userSettingsLength = iOneidaFitAdjustment+1;
 connectorSettingsLength = iExtensionTotalLength+1;
 
 module echoConnector(name, end, help){
@@ -140,6 +141,7 @@ module echoConnector(name, end, help){
     "iExtensionStopThickness", end[iExtensionStopThickness],
     "iExtensionStopLength", end[iExtensionStopLength],
     "iExtensionStopSymmetrical", end[iExtensionStopSymmetrical],
+    "iOneidaFitAdjustment", end[iOneidaFitAdjustment],
     "iAdapterColor", end[iAdapterColor],
     "iInnerDiameter", end[iInnerDiameter],
     "iInnerStartDiameter", end[iInnerStartDiameter],
@@ -229,7 +231,8 @@ function UserConnectorSettings(
   extensionSlipRingSupportSpacing=5,
   extensionStopThickness=0,
   extensionStopLength=0,
-  extensionStopSymmetrical=false
+  extensionStopSymmetrical=false,
+  oneidaFitAdjustment=0
   ) =
   let(result = [
     connector,
@@ -287,7 +290,8 @@ function UserConnectorSettings(
     extensionStopThickness,
     extensionStopLength,
     extensionStopSymmetrical,
-    alignmentRing])
+    alignmentRing,
+    oneidaFitAdjustment])
     ValidateUserConnectorSettings(result);
 
 function ValidateUserConnectorSettings(userSettings) =
@@ -351,6 +355,7 @@ function ValidateUserConnectorSettings(userSettings) =
   assert(is_num(userSettings[iExtensionStopThickness]) && userSettings[iExtensionStopThickness] >= 0, str("stopThickness must be a non-negative number:", userSettings[iExtensionStopThickness]))
   assert(is_num(userSettings[iExtensionStopLength]) && userSettings[iExtensionStopLength] >= 0, str("stopLength must be a non-negative number:", userSettings[iExtensionStopLength]))
   assert(is_bool(userSettings[iExtensionStopSymmetrical]), str("StopSymmetrical must be a boolean:", userSettings[iExtensionStopSymmetrical]))
+  assert(is_num(userSettings[iOneidaFitAdjustment]), str("oneidaFitAdjustment must be a number:", userSettings[iOneidaFitAdjustment]))
   userSettings;
 
 function ValidateConnectorSettings(userSettings) =
@@ -396,6 +401,7 @@ function getConnectorSettings(
     extensionSlipRing = userSettings[iExtensionSlipRing],
     extensionStopThickness = userSettings[iExtensionStopThickness],
     extensionStopLength = userSettings[iExtensionStopLength],
+    oneidaFitAdjustment = userSettings[iOneidaFitAdjustment],
 
     extensionExitInnerDiameter = userSettings[iExtensionExitDiameter],
     extensionText = userSettings[iExtensionText],
@@ -424,15 +430,31 @@ function getConnectorSettings(
       (style == "nozzle" && d == 0) ? con1OuterEndDiameter : d,
     conWallThickness = let(w = retrieveConnectorSetting(style, iSettingsWallThickness, wallThickness))
       (style == "nozzle" && w == 0) ? con1WallThickness : w,
+    oneidaDimensions = style == "oneida"
+      ? oneidaQuickClampDimensions(
+        nominalDiameter = conDiameter,
+        wallThickness = conWallThickness,
+        fitAdjustment = oneidaFitAdjustment)
+      : undef,
     conLength = let( l = retrieveConnectorSetting(style, iSettingsLength, _length))
       (style == "mag") ? max(l, magnetFlangeThickness)
-      : (style == "flange") ? max(l, flangeThickness) : l,
+      : (style == "flange") ? max(l, flangeThickness)
+      : (style == "oneida") ? assert(l == 0 || l >= oneidaQuickClampMinimumLength(wallThickness = conWallThickness),
+          str("Oneida quick-clamp length must be at least ", oneidaQuickClampMinimumLength(wallThickness = conWallThickness), "mm"))
+        l
+      : l,
     conTaper = let(t = (style == "nozzle") ? 0 : retrieveConnectorSetting(style, iSettingsTaper, taper)) conMeasurement == "inner" ? t*-1 : t,
-    conInnerDiameter = conMeasurement == "inner" ? conDiameter : conDiameter - conWallThickness * 2,
+    conInnerDiameter = style == "oneida"
+      ? oneidaDimensions[iOneidaDimensionNeckInnerDiameter]
+      : conMeasurement == "inner" ? conDiameter : conDiameter - conWallThickness * 2,
     conInnerStartDiameter = conInnerDiameter - conTaper / 2,
-    conOuterStartDiameter = conInnerStartDiameter + wallThickness*2,
+    conOuterStartDiameter = style == "oneida"
+      ? oneidaDimensions[iOneidaDimensionNeckOuterDiameter]
+      : conInnerStartDiameter + wallThickness*2,
     conInnerEndDiameter = conInnerDiameter + conTaper / 2,
-    conOuterEndDiameter = conInnerEndDiameter + wallThickness*2,
+    conOuterEndDiameter = style == "oneida"
+      ? oneidaDimensions[iOneidaDimensionNeckOuterDiameter]
+      : conInnerEndDiameter + wallThickness*2,
 
     //If the connector hose is not shown the stop has no thickness
     extStopThickness = (conLength <= 0) ? 0 : extensionStopThickness,
@@ -511,6 +533,7 @@ function getConnectorSettings(
         extStopLength,
         userSettings[iExtensionStopSymmetrical],
         userSettings[iAlignmentRing],
+        userSettings[iOneidaFitAdjustment],
 
         //End of user settings
         alignmentDepth,
