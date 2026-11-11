@@ -55,6 +55,7 @@ HoseAdapter(
 - `length`: `[mm, inch]` tuple, e.g., `[40, 0]`.
 - `taper`: Taper angle in mm. Positive tapers outward toward end.
 - `rotation`: Rotation angle around Z-axis in degrees.
+- `oneidaFitAdjustment`: Diametral fit adjustment in mm for `style="oneida"` (default `0`).
 
 ### Hose Connector Options (`style = "hose"`)
 - `stopThickness`: Thickness of hose stop ring (mm). `0` disables stop.
@@ -106,6 +107,7 @@ HoseAdapter(
 | `"dw735"` | DeWalt DW735 planer dust port adapter |
 | `"kobalt"` | Kobalt saw dust outlet female socket with recessed ring channels |
 | `"rigid_nxt"` | Rigid NXT shop vac hose connector with locking ridges |
+| `"oneida"` | Oneida-style quick-clamp connector driven by nominal inch sizes |
 | `"nozzle"` | Crevice tool, wide nozzle, or utility vacuum nozzle |
 | `"none"` | Open or flat end |
 
@@ -182,3 +184,62 @@ HoseAdapter(
   transitionLength = 15
 );
 ```
+
+### Recipe 3: Oneida 5-inch to 4-inch Straight Adapter
+```scad
+include <modules/vacuum-hose-adapter.scad>
+
+HoseAdapter(
+  connector1 = UserConnectorSettings(
+    connector = 1,
+    style = "oneida",
+    diameter = [0, 5],
+    length = [20, 0],
+    wallThickness = 2.4,
+    taper = 0,
+    oneidaFitAdjustment = 0
+  ),
+  connector2 = UserConnectorSettings(
+    connector = 2,
+    style = "hose",
+    measurement = "outer",
+    diameter = [0, 4],
+    length = [35, 0],
+    wallThickness = 2.4,
+    taper = 0
+  ),
+  transitionLength = 25
+);
+```
+
+### Recipe 4: Oneida Fit Ring (Bed Oriented)
+```scad
+include <modules/vacuum-hose-adapter.scad>
+
+Ring_Length = 10;
+Wall_Thickness_mm = 2.4;
+
+translate([0, 0, Ring_Length])
+mirror([0, 0, 1])
+OneidaQuickClampConnector(
+  nominalDiameter = 5 * 25.4,
+  length = Ring_Length,
+  wallThickness = Wall_Thickness_mm,
+  fitAdjustment = 0
+);
+```
+
+---
+
+## 6. Oneida Quick-Clamp Notes
+
+- Supported user-facing nominal inch selector list: `3,4,5,6,7,8,9,10,11,12,14,16,18`.
+- Use nominal input through `diameter=[0,inch]` in `UserConnectorSettings(...)`, for example `diameter=[0,5]`.
+- 5-inch baseline dimensions: nominal `127`, bead OD `136`, bead cross-section `5.58`, neck OD `123`, neck ID `118.2`.
+- 6-inch baseline dimensions: nominal `152.4`, bead OD `161.4`, neck OD `148.4`.
+- Other nominals use fixed mm offsets with the same undersize model (not percentage scaling).
+- `oneidaFitAdjustment` is diametral and shifts mating diameters only; bead cross-section and wall thickness do not scale.
+- Minimum Oneida quick-clamp length helper: `5.58 + wallThickness` (e.g., `7.98` at `2.4`, `9.58` at `4`).
+- Geometry bounds: connector base starts at `z=0`, the bead's free tip is at `z=length`, and all geometry stays within `0..length`.
+- Only the 5-inch nominal has been physically verified; other sizes are extrapolated and not manufacturer-spec guarantees.
+- The focused Oneida examples support OpenSCAD 2021.01 as well as the development snapshot used by the existing render suite.
