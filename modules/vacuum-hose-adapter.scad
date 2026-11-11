@@ -306,6 +306,17 @@ module adapter(
             help = help,
             $fn = $fn);
         }
+        else if(izTwistIsStyle(con[iStyle]))
+        {
+          // Cancel the inlet's reflection so screw threads and locking ramps keep their handedness.
+          scale([connectorPos == 1 ? -1 : 1, 1, 1])
+          IzTwistConnector(
+            nominalDiameter = con[iDiameter],
+            side = izTwistSide(con[iStyle]),
+            length = con[iLength],
+            wallThickness = con[iWallThickness],
+            help = help);
+        }
         else if(con[iStyle] == "nozzle")
         {
           Nozzle(

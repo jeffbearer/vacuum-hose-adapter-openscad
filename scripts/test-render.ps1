@@ -179,9 +179,25 @@ $oneidaExpectedFailureCases = @(
     @{ case = "fit_shrinks_bore"; pattern = "positive bore" }
 )
 
-$oneidaDemoRelativePaths = @(
+$izTwistExpectedFailureCases = @(
+    @{ case = "invalid_nominal_3"; pattern = "nominal 2.5, 4, or 6 inches" },
+    @{ case = "invalid_nominal_5"; pattern = "nominal 2.5, 4, or 6 inches" },
+    @{ case = "invalid_nominal_7"; pattern = "nominal 2.5, 4, or 6 inches" },
+    @{ case = "invalid_nominal_fractional"; pattern = "nominal 2.5, 4, or 6 inches" },
+    @{ case = "invalid_nominal_type"; pattern = "nominal diameter must be positive" },
+    @{ case = "below_min_length_screw"; pattern = "too short; minimum is" },
+    @{ case = "below_min_length_hook"; pattern = "too short; minimum is" },
+    @{ case = "wall_interference"; pattern = "interfere with the fixed mating profile" },
+    @{ case = "invalid_side"; pattern = "side must be screw or hook" },
+    @{ case = "invalid_threaded_type"; pattern = "threaded must be boolean" },
+    @{ case = "invalid_wall_type"; pattern = "wallThickness must be a non-negative number" }
+)
+
+$demoRelativePaths = @(
     "demos/oneida_adapter.scad",
-    "demos/oneida_fit_ring.scad"
+    "demos/oneida_fit_ring.scad",
+    "demos/iztwist_demo.scad",
+    "demos/iztwist_blast_gate_hose.scad"
 )
 
 $failed = $false
@@ -207,9 +223,19 @@ $ScadScriptFolders |ForEach-Object {
             }
         }
     }
+    elseif($TargetFile.BaseName -ieq 'iztwist_expected_failures'){
+        $izTwistExpectedFailureCases | ForEach-Object {
+            $caseName = $_.case
+            $input_args = " -D `"Case=`"`"$($caseName)`"`"`""
+            $success = Test-OpenSCAD -TargetFile $TargetFile -saveResults $saveResults -cmdArgsInput $input_args -SaveAppend "_$($caseName)" -expectedErrorPattern $_.pattern
+            if(!$success){
+                $failed = $true
+            }
+        }
+    }
     elseif($TargetFile.BaseName -ieq 'vacuum-hose-adapter'){
 
-        $styles = @('mag', 'flange', 'hose', 'dyson', 'camlock', 'dw735', 'centec_female', 'centec_male', 'osvacm32', 'osvacm', 'osvacf32', 'osvacf', 'makita_male', 'bosch_sander', 'festoolcleanteclug', 'oneida')
+        $styles = @('mag', 'flange', 'hose', 'dyson', 'camlock', 'dw735', 'centec_female', 'centec_male', 'osvacm32', 'osvacm', 'osvacf32', 'osvacf', 'makita_male', 'bosch_sander', 'festoolcleanteclug', 'oneida', 'iztwist_screw', 'iztwist_hook')
 
         $styles | ForEach-Object {
             $style = $_
@@ -227,7 +253,7 @@ $ScadScriptFolders |ForEach-Object {
     }
 }}
 
-$oneidaDemoRelativePaths | ForEach-Object {
+$demoRelativePaths | ForEach-Object {
     $demoFile = Get-Item -LiteralPath (Join-Path $repositoryRoot $_)
     if($saveResults) {
         $outputScriptFolderPath = Join-Path $demoFile.DirectoryName $outputScriptFolder

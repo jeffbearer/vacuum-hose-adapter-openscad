@@ -16,7 +16,7 @@ include <modules/vacuum-hose-adapter.scad>
 End1_Wall_Thickness = 2; //0.01
 //The style of the end
 End1_Style="hose"; // [hose: Hose connector, mag: Magnetic Flange, flange: Flange, osvacm:osVAC Male, osvacf:osVAC Female]
-End1_Specialised_Style="disabled"; // [disabled:Disabled, oneida: Oneida quick clamp, dyson: Dyson connector, camlock: CAMLOCK connetor, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32, makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
+End1_Specialised_Style="disabled"; // [disabled:Disabled, oneida: Oneida quick clamp, iztwist_screw: IzTwist screw carrier, iztwist_hook: IzTwist hook side, dyson: Dyson connector, camlock: CAMLOCK connetor, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32, makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
 // Is the measurement the adapter's outside or inside diameter?
 End1_Measurement = "outer"; //[inner, outer]
 // End 1 diameter of the adapter (mm, inch)
@@ -33,6 +33,10 @@ End1_Taper = 1;  //0.1
 End1_Oneida_Size = 5; // [3,4,5,6,7,8,9,10,11,12,14,16,18]
 //Diametral fit adjustment in mm. Positive enlarges the mating diameters; negative reduces them.
 End1_Oneida_Fit_Adjustment = 0; //0.01
+
+/* [Connector 1 - IzTwist quick connect] */
+//Nominal IzTwist duct size in inches; used instead of the general diameter setting. Inspired by our favorite South Carolina inventor.
+End1_IzTwist_Size = 2.5; // [2.5,4,6]
 
 /* [Connector 1 - Extension] */
 //Length of the extension
@@ -165,7 +169,7 @@ Transition_Base_Angle=0;
 //Wall thickness
 End2_Wall_Thickness = 2; //0.01
 End2_Style="hose"; // [hose: Hose connector, mag: Magnetic Flange, flange: Flange, nozzle: Nozzle attachment, osvacm:osVAC Male, osvacf:osVAC Female, none: None]
-End2_Specialised_Style="disabled"; // [disabled:Disabled, oneida: Oneida quick clamp, dyson: Dyson connector, camlock: CAMLOCK connector, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32,  makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
+End2_Specialised_Style="disabled"; // [disabled:Disabled, oneida: Oneida quick clamp, iztwist_screw: IzTwist screw carrier, iztwist_hook: IzTwist hook side, dyson: Dyson connector, camlock: CAMLOCK connector, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32,  makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
 
 // Is the measurement the adapter's outside or inside diameter?
 End2_Measurement = "outer"; //[inner, outer]
@@ -183,6 +187,10 @@ End2_Taper = 1;  //0.1
 End2_Oneida_Size = 5; // [3,4,5,6,7,8,9,10,11,12,14,16,18]
 //Diametral fit adjustment in mm. Positive enlarges the mating diameters; negative reduces them.
 End2_Oneida_Fit_Adjustment = 0; //0.01
+
+/* [Connector 2 - IzTwist quick connect] */
+//Nominal IzTwist duct size in inches; used instead of the general diameter setting. Inspired by our favorite South Carolina inventor.
+End2_IzTwist_Size = 2.5; // [2.5,4,6]
 
 /* [Connector 2 - Extension] */
 //Length of the extension
@@ -282,7 +290,7 @@ End2_Nozzle_Chamfer_Angle = 0; //0.1
 //Wall thickness
 End3_Wall_Thickness = 2; //0.01
 End3_Style="hose"; // [hose: Hose connector, mag: Magnetic Flange, flange: Flange, nozzle: Nozzle attachement, osvacm:osVAC Male, osvacf:osVAC Female, none: None]
-End3_Specialised_Style="disabled"; // [disabled:Disabled, oneida: Oneida quick clamp, dyson: Dyson connector, camlock: CAMLOCK connector, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32,  makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
+End3_Specialised_Style="disabled"; // [disabled:Disabled, oneida: Oneida quick clamp, iztwist_screw: IzTwist screw carrier, iztwist_hook: IzTwist hook side, dyson: Dyson connector, camlock: CAMLOCK connector, dw735: Dewalt DW735x, centec_female: Cen-Tec quick female connect, centec_male: Cen-Tec quick male connect, osvacm32:osVAC M32, osvacf32:osVAC F32,  makita_male: Makita Quick connect Male connector, bosch_sander: Bosch orbital sander, festoolcleanteclug: Festool Cleantec Lug, kobalt: Kobalt Saw Dust Outlet, rigid_nxt: Rigid NXT Vac Hose]
 
 // Is the measurement the adapter's outside or inside diameter?
 End3_Measurement = "outer"; //[inner, outer]
@@ -300,6 +308,10 @@ End3_Taper = 0;  //0.1
 End3_Oneida_Size = 5; // [3,4,5,6,7,8,9,10,11,12,14,16,18]
 //Diametral fit adjustment in mm. Positive enlarges the mating diameters; negative reduces them.
 End3_Oneida_Fit_Adjustment = 0; //0.01
+
+/* [Connector 3 - IzTwist quick connect] */
+//Nominal IzTwist duct size in inches; used instead of the general diameter setting. Inspired by our favorite South Carolina inventor.
+End3_IzTwist_Size = 2.5; // [2.5,4,6]
 
 /* [Connector 3 - Extension] */
 //Length of the extension
@@ -432,8 +444,14 @@ fn = 0;
 /* [Hidden] */
 module end_of_customizer_opts() {}
 
+function selectedConnectorStyle(style, specialisedStyle) =
+  specialisedStyle == "" || specialisedStyle == "disabled" ? style : specialisedStyle;
+
 function isOneidaConnector(style, specialisedStyle) =
-  (specialisedStyle == "" || specialisedStyle == "disabled" ? style : specialisedStyle) == "oneida";
+  selectedConnectorStyle(style, specialisedStyle) == "oneida";
+
+function isIzTwistConnector(style, specialisedStyle) =
+  izTwistIsStyle(selectedConnectorStyle(style, specialisedStyle));
 
 //Some online generators do not like direct setting of fa,fs,fn
 $fa = fa;
@@ -448,7 +466,9 @@ HoseAdapter(
     specialisedStyle=End1_Specialised_Style,
     wallThickness=End1_Wall_Thickness,
     measurement=End1_Measurement,
-    diameter=isOneidaConnector(End1_Style, End1_Specialised_Style) ? [0, End1_Oneida_Size] : End1_Diameter,
+    diameter=isOneidaConnector(End1_Style, End1_Specialised_Style) ? [0, End1_Oneida_Size]
+      : isIzTwistConnector(End1_Style, End1_Specialised_Style) ? [0, End1_IzTwist_Size]
+      : End1_Diameter,
     length=End1_Length,
     rotation=End1_Rotation,
     taper=End1_Taper,
@@ -501,7 +521,9 @@ HoseAdapter(
     specialisedStyle=End2_Specialised_Style,
     wallThickness=End2_Wall_Thickness,
     measurement=End2_Measurement,
-    diameter=isOneidaConnector(End2_Style, End2_Specialised_Style) ? [0, End2_Oneida_Size] : End2_Diameter,
+    diameter=isOneidaConnector(End2_Style, End2_Specialised_Style) ? [0, End2_Oneida_Size]
+      : isIzTwistConnector(End2_Style, End2_Specialised_Style) ? [0, End2_IzTwist_Size]
+      : End2_Diameter,
     length=End2_Length,
     rotation=End2_Rotation,
     taper=End2_Taper,
@@ -561,7 +583,9 @@ HoseAdapter(
     specialisedStyle=End3_Specialised_Style,
     wallThickness=End3_Wall_Thickness,
     measurement=End3_Measurement,
-    diameter=isOneidaConnector(End3_Style, End3_Specialised_Style) ? [0, End3_Oneida_Size] : End3_Diameter,
+    diameter=isOneidaConnector(End3_Style, End3_Specialised_Style) ? [0, End3_Oneida_Size]
+      : isIzTwistConnector(End3_Style, End3_Specialised_Style) ? [0, End3_IzTwist_Size]
+      : End3_Diameter,
     length=End3_Length,
     rotation=End3_Rotation,
     taper=End3_Taper,

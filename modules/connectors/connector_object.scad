@@ -421,6 +421,7 @@ function getConnectorSettings(
 
     _diameter = measurement_to_mm(diameter),
     _length = measurement_to_mm(length),
+    izTwistStyle = izTwistIsStyle(style),
     //For nozzle, if the diameter is 0, then set it to the D1, this will look nice.
     conMeasurement = let(
       m = retrieveConnectorSetting(style, iSettingsMeasurement, measurement),
@@ -442,18 +443,38 @@ function getConnectorSettings(
       : (style == "oneida") ? assert(l == 0 || l >= oneidaQuickClampMinimumLength(wallThickness = conWallThickness),
           str("Oneida quick-clamp length must be at least ", oneidaQuickClampMinimumLength(wallThickness = conWallThickness), "mm"))
         l
+      : izTwistStyle ? assert(
+          l == 0 || l >= izTwistMinimumLength(
+            nominalDiameter = conDiameter,
+            side = izTwistSide(style),
+            wallThickness = conWallThickness),
+          str(
+            "IzTwist length must be at least ",
+            izTwistMinimumLength(
+              nominalDiameter = conDiameter,
+              side = izTwistSide(style),
+              wallThickness = conWallThickness),
+            "mm"))
+        l
       : l,
     conTaper = let(t = (style == "nozzle") ? 0 : retrieveConnectorSetting(style, iSettingsTaper, taper)) conMeasurement == "inner" ? t*-1 : t,
     conInnerDiameter = style == "oneida"
       ? oneidaDimensions[iOneidaDimensionNeckInnerDiameter]
+      : izTwistStyle ? izTwistNeckInnerDiameter(nominalDiameter = conDiameter)
       : conMeasurement == "inner" ? conDiameter : conDiameter - conWallThickness * 2,
     conInnerStartDiameter = conInnerDiameter - conTaper / 2,
     conOuterStartDiameter = style == "oneida"
       ? oneidaDimensions[iOneidaDimensionNeckOuterDiameter]
+      : izTwistStyle ? izTwistNeckOuterDiameter(
+          nominalDiameter = conDiameter,
+          wallThickness = conWallThickness)
       : conInnerStartDiameter + wallThickness*2,
     conInnerEndDiameter = conInnerDiameter + conTaper / 2,
     conOuterEndDiameter = style == "oneida"
       ? oneidaDimensions[iOneidaDimensionNeckOuterDiameter]
+      : izTwistStyle ? izTwistNeckOuterDiameter(
+          nominalDiameter = conDiameter,
+          wallThickness = conWallThickness)
       : conInnerEndDiameter + wallThickness*2,
 
     //If the connector hose is not shown the stop has no thickness

@@ -43,6 +43,17 @@ Intended for Oneida-style quick-clamp ports using nominal inch sizes.
 * `oneidaFitAdjustment` (mm): diametral fit adjustment; positive increases mating diameters, negative reduces them.
 * 5-inch nominal is physically verified. Other nominal sizes are fixed-offset extrapolations and are not manufacturer-guaranteed.
 
+### IzTwist screw-hook quick connection (prototype)
+Experimental connector pair for nominal duct sizes using fixed mating profiles.
+Inspired by our favorite South Carolina inventor.
+
+#### Main settings
+* Styles: `iztwist_screw` and `iztwist_hook`
+* Nominal diameter: exact list `2.5,4,6` inches (for example `diameter=[0,2.5]`)
+* Wall and length are user-adjustable, but mating profile dimensions are fixed per nominal and do not scale.
+* Prototype notice: matching requires physical fit checks, hardware projection tuning, and may not match all third-party reference hardware yet.
+* Reference design: [HybridHobbyist (@IceDeck_241588)](https://www.printables.com/@IceDeck_241588) on Printables, [Dust Collector/Vacuum Hose Couplers Variety](https://www.printables.com/model/332587), CC BY-NC-SA 4.0. GPL-compatible licensing permission remains unresolved; do not submit this prototype upstream or assume the reference design has been relicensed.
+
 ### Flat connection
 Intended for connection to a tool. To achieve this the transition section is set
 to flat, the transition length becomes the thickness. The flat area will be from
@@ -100,6 +111,9 @@ The file [vacuum-hose-adapter-samples.scad](vacuum-hose-adapter-samples.scad
 ### Oneida examples
 * [demos/oneida_adapter.scad](demos/oneida_adapter.scad): straight 5-inch Oneida to 4-inch hose adapter using `UserConnectorSettings(... style="oneida" ...)`.
 * [demos/oneida_fit_ring.scad](demos/oneida_fit_ring.scad): bed-oriented Oneida fit ring using `OneidaQuickClampConnector()` with nominal API values.
+
+### IzTwist examples (prototype)
+* [demos/iztwist_demo.scad](demos/iztwist_demo.scad): screw/hook/gasket/assembly and adapter demo for nominal sizes `2.5,4,6`.
 
 ### 50mm hose to 30mm hose
 An adapter to connect a 50mm (internal diameter) hose to a 30mm (internal

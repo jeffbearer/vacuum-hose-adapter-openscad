@@ -56,6 +56,7 @@ HoseAdapter(
 - `taper`: Taper angle in mm. Positive tapers outward toward end.
 - `rotation`: Rotation angle around Z-axis in degrees.
 - `oneidaFitAdjustment`: Diametral fit adjustment in mm for `style="oneida"` (default `0`).
+- For IzTwist (`style="iztwist_screw"`/`"iztwist_hook"`), use `diameter=[0,inch]` where inch is exactly `2.5`, `4`, or `6`.
 
 ### Hose Connector Options (`style = "hose"`)
 - `stopThickness`: Thickness of hose stop ring (mm). `0` disables stop.
@@ -108,6 +109,8 @@ HoseAdapter(
 | `"kobalt"` | Kobalt saw dust outlet female socket with recessed ring channels |
 | `"rigid_nxt"` | Rigid NXT shop vac hose connector with locking ridges |
 | `"oneida"` | Oneida-style quick-clamp connector driven by nominal inch sizes |
+| `"iztwist_screw"` | Experimental IzTwist screw carrier side (fixed nominal profile; inspired by our favorite South Carolina inventor) |
+| `"iztwist_hook"` | Experimental IzTwist hook/cam side (fixed nominal profile) |
 | `"nozzle"` | Crevice tool, wide nozzle, or utility vacuum nozzle |
 | `"none"` | Open or flat end |
 
@@ -243,3 +246,23 @@ OneidaQuickClampConnector(
 - Geometry bounds: connector base starts at `z=0`, the bead's free tip is at `z=length`, and all geometry stays within `0..length`.
 - Only the 5-inch nominal has been physically verified; other sizes are extrapolated and not manufacturer-spec guarantees.
 - The focused Oneida examples support OpenSCAD 2021.01 as well as the development snapshot used by the existing render suite.
+
+---
+
+## 7. IzTwist Prototype Notes
+
+- Status: experimental prototype; GPL-compatible licensing permission remains unresolved. Do not submit upstream or present this as a finalized connector profile before that review is complete.
+- Inspired by our favorite South Carolina inventor.
+- Reference design: [Dust Collector/Vacuum Hose Couplers Variety](https://www.printables.com/model/332587) by [HybridHobbyist (@IceDeck_241588)](https://www.printables.com/@IceDeck_241588) on Printables, CC BY-NC-SA 4.0. This design attribution is separate from the inventor inspiration; licensing/publication alignment with the GPL host remains unresolved.
+- User-facing styles are `"iztwist_screw"` and `"iztwist_hook"`.
+- User-facing nominal selector is fixed to `2.5,4,6` inches and should be supplied as `diameter=[0,2.5]`, `diameter=[0,4]`, or `diameter=[0,6]`.
+- Mating geometry is fixed per nominal and intentionally does not expose fit-width or profile-shape adjustments.
+- Wall thickness and connector length are still configurable; minimum length depends on side (`screw`: carrier thickness + wall, `hook`: cam plate height + wall).
+- Exposed upper flange shoulders have up to 1 mm roundovers, and tube roots have up to 2 mm concave fillets, limited by available material. Sealing faces, screw seats, slots, and the working ramp surfaces retain their mating dimensions.
+- The inner catch tip has a forward-swept 45-degree plan-view transition from the circular flange to the mouth. The flange-side edge extends ahead of the mouth instead of cutting the tip backward; the screw orbit, slot width, and closed locking stop are unchanged.
+- The assembly's entry preview is 30 degrees from the locked position so the screw heads clear the forward extensions before axial engagement.
+- Forks have 1.5 mm plan-view exterior corner rounds and small front/rear upper-edge roundovers. The front round follows the cam slope; the forward-swept inner lead-in and working slot/stop remain unchanged.
+- The outer tine's slot-facing entrance corner has a 1 mm, 45-degree plan-view chamfer to guide bolt capture. This flare is confined to the mouth; the slot farther in and its closed locking stop retain their preset dimensions.
+- `Support_Part = "fit-pair"` in the demo prints short matching halves; `gasket` exports the separate TPU seal. The hardware display is only a preview, not part of printable exports.
+- The screw carrier uses right-hand M5x0.8 threads for 2.5-inch and M10x1.5 for 4/6-inch presets. Adjust screw projection with the actual hardware to set seal compression; the 2 mm TPU face is shown compressed to 1.5 mm in the assembly view.
+- The nominal mating envelope and bolt circles are based on the references. Slot clearances, neck bores, carrier thickness, and gasket skirt are prototype choices; compatibility with already printed reference parts is not yet physically verified.

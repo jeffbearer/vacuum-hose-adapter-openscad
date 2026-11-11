@@ -12,6 +12,8 @@ connectorSettings =[
   makitaMaleSettings,
   boschSanderSettings,
   festoolCleantecLugSettings,
+  izTwistScrewSettings,
+  izTwistHookSettings,
   oneidaSettings,
   rigidNxtSettings,
   kobaltSettings,
