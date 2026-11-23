@@ -38,9 +38,18 @@ HoseAdapter(
   showCaliper = false,             // Render dimension calipers
   end1Color = ["", 1],
   end2Color = ["", 1],
-  transitionColor = ["", 1]
+  transitionColor = ["", 1],
+
+  outputMode = "adapter",          // "adapter", "alignment_ring", "iztwist_gasket"
+  outputEnd = "end1"               // "end1", "end2", "end3"
 );
 ```
+
+Output behavior notes:
+- `outputMode="adapter"` keeps the original full adapter behavior.
+- `outputMode="alignment_ring"` renders only the ring and supports `outputEnd="end1"` or `"end2"` (end3 is invalid).
+- `outputMode="iztwist_gasket"` renders `IzTwistGasket(...)` from the selected end’s fixed IzTwist nominal family (`2.5`, `4`, `6`), independent of transition geometry.
+- Legacy `drawAlignmentRing` remains supported for older presets/scripts. If `outputMode` is not `"adapter"`, `drawAlignmentRing` must stay `"no"` to avoid conflicting outputs.
 
 ---
 

@@ -193,6 +193,17 @@ $izTwistExpectedFailureCases = @(
     @{ case = "invalid_wall_type"; pattern = "wallThickness must be a non-negative number" }
 )
 
+$hoseAdapterOutputExpectedFailureCases = @(
+    @{ case = "invalid_output_mode"; pattern = "outputMode must be adapter, alignment_ring, or iztwist_gasket" },
+    @{ case = "invalid_output_end"; pattern = "outputEnd must be end1, end2, or end3" },
+    @{ case = "alignment_ring_end3"; pattern = "Output alignment_ring supports outputEnd end1 or end2 only" },
+    @{ case = "gasket_non_iztwist_style"; pattern = "requires selected end1 style to be iztwist_screw or iztwist_hook" },
+    @{ case = "gasket_invalid_nominal"; pattern = "nominal 2.5, 4, or 6 inches" },
+    @{ case = "gasket_invalid_record"; pattern = "requires selected end2 to be a UserConnectorSettings record" },
+    @{ case = "legacy_conflict_alignment"; pattern = "drawAlignmentRing conflicts with outputMode=alignment_ring" },
+    @{ case = "legacy_conflict_gasket"; pattern = "drawAlignmentRing conflicts with outputMode=iztwist_gasket" }
+)
+
 $demoRelativePaths = @(
     "demos/oneida_adapter.scad",
     "demos/oneida_fit_ring.scad",
@@ -233,6 +244,16 @@ $ScadScriptFolders |ForEach-Object {
             }
         }
     }
+    elseif($TargetFile.BaseName -ieq 'hose_adapter_output_expected_failures'){
+        $hoseAdapterOutputExpectedFailureCases | ForEach-Object {
+            $caseName = $_.case
+            $input_args = " -D `"Case=`"`"$($caseName)`"`"`""
+            $success = Test-OpenSCAD -TargetFile $TargetFile -saveResults $saveResults -cmdArgsInput $input_args -SaveAppend "_$($caseName)" -expectedErrorPattern $_.pattern
+            if(!$success){
+                $failed = $true
+            }
+        }
+    }
     elseif($TargetFile.BaseName -ieq 'vacuum-hose-adapter'){
 
         $styles = @('mag', 'flange', 'hose', 'dyson', 'camlock', 'dw735', 'centec_female', 'centec_male', 'osvacm32', 'osvacm', 'osvacf32', 'osvacf', 'makita_male', 'bosch_sander', 'festoolcleanteclug', 'oneida', 'iztwist_screw', 'iztwist_hook')
@@ -243,6 +264,41 @@ $ScadScriptFolders |ForEach-Object {
             $success = Test-OpenSCAD -TargetFile $TargetFile -saveResults $saveResults -cmdArgsInput $input_args -SaveAppend $style
             if(!$success){
                 $failed = $true
+            }
+        }
+
+        $outputEnds = @('end1', 'end2', 'end3')
+        $izTwistStyles = @('iztwist_screw', 'iztwist_hook')
+        $izTwistNominals = @(2.5, 4, 6)
+
+        $outputEnds | ForEach-Object {
+            $selectedEnd = $_
+            $izTwistStyles | ForEach-Object {
+                $izStyle = $_
+                $izTwistNominals | ForEach-Object {
+                    $nominal = $_
+
+                    $input_args = " -D `"Output_Mode=`"`"iztwist_gasket`"`"`""
+                    $input_args += " -D `"Output_End=`"`"$($selectedEnd)`"`"`""
+                    $input_args += " -D `"Transition_Bend_Pipe_Diameter=`"`"custom`"`"`" -D `"Transition_Custom_Bend_Pipe_Diameter=0`""
+
+                    if($selectedEnd -eq 'end1'){
+                        $input_args += " -D `"End1_Style=`"`"specialised`"`"`" -D `"End1_Specialised_Style=`"`"$($izStyle)`"`"`" -D `"End1_IzTwist_Size=$($nominal)`""
+                        $input_args += " -D `"End2_Style=`"`"specialised`"`"`" -D `"End2_Specialised_Style=`"`"oneida`"`"`" -D `"End2_Oneida_Size=13`""
+                    } elseif($selectedEnd -eq 'end2'){
+                        $input_args += " -D `"End2_Style=`"`"specialised`"`"`" -D `"End2_Specialised_Style=`"`"$($izStyle)`"`"`" -D `"End2_IzTwist_Size=$($nominal)`""
+                        $input_args += " -D `"End1_Style=`"`"specialised`"`"`" -D `"End1_Specialised_Style=`"`"oneida`"`"`" -D `"End1_Oneida_Size=13`""
+                    } else {
+                        $input_args += " -D `"End3_Style=`"`"specialised`"`"`" -D `"End3_Specialised_Style=`"`"$($izStyle)`"`"`" -D `"End3_IzTwist_Size=$($nominal)`""
+                        $input_args += " -D `"End1_Style=`"`"specialised`"`"`" -D `"End1_Specialised_Style=`"`"oneida`"`"`" -D `"End1_Oneida_Size=13`""
+                    }
+
+                    $saveAppend = "_gasket_${selectedEnd}_${izStyle}_$($nominal)"
+                    $success = Test-OpenSCAD -TargetFile $TargetFile -saveResults $saveResults -cmdArgsInput $input_args -SaveAppend $saveAppend
+                    if(!$success){
+                        $failed = $true
+                    }
+                }
             }
         }
     } else {

@@ -29,6 +29,17 @@ function renderModeEnabled(mode) =
     str("render mode must be 'disable', 'enable', or 'preview only'. Provided: ", mode))
   mode == "enable" || (mode == "preview only" && $preview);
 
+function isOutputMode(mode) =
+  mode == "adapter" || mode == "alignment_ring" || mode == "iztwist_gasket";
+
+function isOutputEnd(outputEnd) =
+  outputEnd == "end1" || outputEnd == "end2" || outputEnd == "end3";
+
+function connectorForOutputEnd(outputEnd, connector1, connector2, connector3) =
+  outputEnd == "end1" ? connector1
+  : outputEnd == "end2" ? connector2
+  : connector3;
+
 module adapterAlignmentRing(
   centerDiameter = 0,
   alignmentDepth = 0,
@@ -942,51 +953,75 @@ module HoseAdapter(
   end3Color = [DefaultEnd3Color,1],
   transitionColor = [DefaultTransitionColor,1],
   extensionColor = [DefaultExtensionColor,1],
-  help = false
+  help = false,
+  outputMode = "adapter",
+  outputEnd = "end1"
 ){
   $gha=[["connector1",[0,0,0]],["connector2",[0,0,0]],["transition",[0,0,0]]];
+  assert(isOutputMode(outputMode), str("outputMode must be adapter, alignment_ring, or iztwist_gasket. Provided: ", outputMode));
+  assert(isOutputEnd(outputEnd), str("outputEnd must be end1, end2, or end3. Provided: ", outputEnd));
+  assert(drawAlignmentRing == "no" || drawAlignmentRing == "end1" || drawAlignmentRing == "end2",
+    str("drawAlignmentRing must be no, end1, or end2. Provided: ", drawAlignmentRing));
+  assert(outputMode == "adapter" || drawAlignmentRing == "no",
+    str("drawAlignmentRing conflicts with outputMode=", outputMode, ". Set drawAlignmentRing=\"no\" when outputMode is not adapter."));
 
-  end1 = getConnectorSettings(
-    userSettings=connector1,
-    slipRingSettings=calculate_slipring_size(slipring=connector1[iExtensionSlipRing], width=connector1[iExtensionSlipRingWidth]),
-    alignmentDepth=alignmentDepth,
-    alignmentUpperWidth=alignmentUpperWidth,
-    alignmentLowerWidth=alignmentLowerWidth,
-    alignmentSideClearance=alignmentSideClearance,
-    alignmentDepthClearance=alignmentDepthClearance,
-    adapterColor = getColor(end1Color, DefaultEnd1Color),
-    con1Measurement=connector1[iMeasurement],
-    con1WallThickness=connector1[iWallThickness]);
+  if(outputMode == "iztwist_gasket")
+  {
+    selectedUserSettings = connectorForOutputEnd(outputEnd, connector1, connector2, connector3);
+    assert(is_list(selectedUserSettings) && len(selectedUserSettings) >= userSettingsLength,
+      str("Output iztwist_gasket requires selected ", outputEnd, " to be a UserConnectorSettings record"));
+    assert(izTwistIsStyle(selectedUserSettings[iStyle]),
+      str("Output iztwist_gasket requires selected ", outputEnd,
+        " style to be iztwist_screw or iztwist_hook. Provided: ", selectedUserSettings[iStyle]));
+    IzTwistGasket(nominalDiameter = measurement_to_mm(selectedUserSettings[iDiameter]));
+  }
+  else
+  {
+    selectedAlignmentEnd = outputMode == "alignment_ring" ? outputEnd : drawAlignmentRing;
+    assert(outputMode != "alignment_ring" || selectedAlignmentEnd == "end1" || selectedAlignmentEnd == "end2",
+      str("Output alignment_ring supports outputEnd end1 or end2 only. Provided: ", outputEnd));
 
-  end2 = getConnectorSettings(
-    userSettings=connector2,
-    slipRingSettings=calculate_slipring_size(slipring=connector2[iExtensionSlipRing], width=connector2[iExtensionSlipRingWidth]),
-    alignmentDepth=alignmentDepth,
-    alignmentUpperWidth=alignmentUpperWidth,
-    alignmentLowerWidth=alignmentLowerWidth,
-    alignmentSideClearance=alignmentSideClearance,
-    alignmentDepthClearance=alignmentDepthClearance,
-    adapterColor = getColor(end2Color, DefaultEnd2Color),
-    con1Measurement=end1[iMeasurement],
-    con1OuterEndDiameter=end1[iInterfaceOuterDiameter],
-    con1WallThickness=end1[iWallThickness]);
+    end1 = getConnectorSettings(
+      userSettings=connector1,
+      slipRingSettings=calculate_slipring_size(slipring=connector1[iExtensionSlipRing], width=connector1[iExtensionSlipRingWidth]),
+      alignmentDepth=alignmentDepth,
+      alignmentUpperWidth=alignmentUpperWidth,
+      alignmentLowerWidth=alignmentLowerWidth,
+      alignmentSideClearance=alignmentSideClearance,
+      alignmentDepthClearance=alignmentDepthClearance,
+      adapterColor = getColor(end1Color, DefaultEnd1Color),
+      con1Measurement=connector1[iMeasurement],
+      con1WallThickness=connector1[iWallThickness]);
 
-  end3 = getConnectorSettings(
-    userSettings=connector3,
-    slipRingSettings=calculate_slipring_size(slipring=connector3[iExtensionSlipRing], width=connector3[iExtensionSlipRingWidth]),
-    alignmentDepth=alignmentDepth,
-    alignmentUpperWidth=alignmentUpperWidth,
-    alignmentLowerWidth=alignmentLowerWidth,
-    alignmentSideClearance=alignmentSideClearance,
-    alignmentDepthClearance=alignmentDepthClearance,
-    adapterColor = getColor(end3Color, DefaultEnd3Color),
-    con1Measurement=end1[iMeasurement],
-    con1OuterEndDiameter=end1[iInterfaceOuterDiameter],
-    con1WallThickness=end1[iWallThickness]);
+    end2 = getConnectorSettings(
+      userSettings=connector2,
+      slipRingSettings=calculate_slipring_size(slipring=connector2[iExtensionSlipRing], width=connector2[iExtensionSlipRingWidth]),
+      alignmentDepth=alignmentDepth,
+      alignmentUpperWidth=alignmentUpperWidth,
+      alignmentLowerWidth=alignmentLowerWidth,
+      alignmentSideClearance=alignmentSideClearance,
+      alignmentDepthClearance=alignmentDepthClearance,
+      adapterColor = getColor(end2Color, DefaultEnd2Color),
+      con1Measurement=end1[iMeasurement],
+      con1OuterEndDiameter=end1[iInterfaceOuterDiameter],
+      con1WallThickness=end1[iWallThickness]);
 
-  echoConnector("end1", end1, help);
-  echoConnector("end2", end2, help);
-  echoConnector("end3", end3, transitionHullCenter == "end3" ? help : false);
+    end3 = getConnectorSettings(
+      userSettings=connector3,
+      slipRingSettings=calculate_slipring_size(slipring=connector3[iExtensionSlipRing], width=connector3[iExtensionSlipRingWidth]),
+      alignmentDepth=alignmentDepth,
+      alignmentUpperWidth=alignmentUpperWidth,
+      alignmentLowerWidth=alignmentLowerWidth,
+      alignmentSideClearance=alignmentSideClearance,
+      alignmentDepthClearance=alignmentDepthClearance,
+      adapterColor = getColor(end3Color, DefaultEnd3Color),
+      con1Measurement=end1[iMeasurement],
+      con1OuterEndDiameter=end1[iInterfaceOuterDiameter],
+      con1WallThickness=end1[iWallThickness]);
+
+    echoConnector("end1", end1, help);
+    echoConnector("end2", end2, help);
+    echoConnector("end3", end3, transitionHullCenter == "end3" ? help : false);
 
   //Transition settings
   // transitionLength is not wanted for sweep
@@ -1065,36 +1100,27 @@ module HoseAdapter(
           : (end1[iInterfaceOuterDiameter] - end2[iInterfaceOuterDiameter])/2 + transitionHullyOffset) * cos(_transitionAngle)
         : 0;
 
-     function bend_radius(transitionAngle, transitionBendRadius, end1OuterEndDiameter, end2OuterEndDiameter, taperedAverageDiameter) =
-         let(organic_bend_radius = transitionEnd2Count > 1
-                ? -(taperedAverageDiameter/2)/(cos(transitionAngle)-1)-taperedAverageDiameter/2 + transitionBendRadius
-                : taperedAverageDiameter + transitionBendRadius,
-             bendPipeOuterDiameter = bendPipeDiameter + bendPipeWallThickness*2,
-             bend_taper_radius = transitionEnd2Count > 1
-                ? -(bendPipeOuterDiameter/2)/(cos(transitionAngle)-1)-bendPipeOuterDiameter/2 + transitionBendRadius
-                : bendPipeOuterDiameter/2 + transitionBendRadius,
-             taper_bend_radius = transitionEnd2Count > 1
-                ? -(end2OuterEndDiameter/2)/(cos(transitionAngle)-1)-end2OuterEndDiameter/2 + transitionBendRadius
-                : end2OuterEndDiameter/2 + transitionBendRadius,
-             hull_radius = 0 )
-                  transitionStyle == "organicbend" ? organic_bend_radius
-                  : _transitionStyle == "bend+taper" ? bend_taper_radius
-                  : _transitionStyle == "taper+bend" ? taper_bend_radius
-                  : _transitionStyle == "hull" ? hull_radius
-                  : 0;
+      bendRadius = let(
+        organic_bend_radius = transitionEnd2Count > 1
+          ? -(taperedAverageDiameter/2)/(cos(_transitionAngle)-1)-taperedAverageDiameter/2 + transitionBendRadius
+          : taperedAverageDiameter + transitionBendRadius,
+        _bendPipeOuterDiameter = bendPipeDiameter + bendPipeWallThickness*2,
+        bend_taper_radius = transitionEnd2Count > 1
+          ? -(_bendPipeOuterDiameter/2)/(cos(_transitionAngle)-1)-_bendPipeOuterDiameter/2 + transitionBendRadius
+          : _bendPipeOuterDiameter/2 + transitionBendRadius,
+        taper_bend_radius = transitionEnd2Count > 1
+          ? -(end2[iInterfaceOuterDiameter]/2)/(cos(_transitionAngle)-1)-end2[iInterfaceOuterDiameter]/2 + transitionBendRadius
+          : end2[iInterfaceOuterDiameter]/2 + transitionBendRadius)
+        transitionStyle == "organicbend" ? organic_bend_radius
+        : _transitionStyle == "bend+taper" ? bend_taper_radius
+        : _transitionStyle == "taper+bend" ? taper_bend_radius
+        : _transitionStyle == "hull" ? 0
+        : 0;
 
-      //end hull settings
-      bendRadius = bend_radius(
-        transitionAngle=_transitionAngle,
-        transitionBendRadius=transitionBendRadius,
-        end1OuterEndDiameter=end1[iInterfaceOuterDiameter],
-        end2OuterEndDiameter=end2[iInterfaceOuterDiameter],
-        taperedAverageDiameter=taperedAverageDiameter);
-
-  if(drawAlignmentRing == "end1" || drawAlignmentRing == "end2")
+  if(selectedAlignmentEnd == "end1" || selectedAlignmentEnd == "end2")
   {
     adapterAlignmentRing(
-      centerDiameter = drawAlignmentRing == "end1"
+      centerDiameter = selectedAlignmentEnd == "end1"
         ? end1[iInnerStartDiameter] + end1[iMagnetBorder] + alignmentUpperWidth
         : end2[iInnerStartDiameter] + end2[iMagnetBorder] + alignmentUpperWidth,
       alignmentDepth = alignmentDepth,
@@ -1102,7 +1128,7 @@ module HoseAdapter(
       alignmentLowerWidth = alignmentLowerWidth,
       alignmentSideClearance = alignmentSideClearance,
       alignmentDepthClearance = alignmentDepthClearance,
-      magnetBorder = drawAlignmentRing == "end1" ? end1[iMagnetBorder] : end2[iMagnetBorder],
+      magnetBorder = selectedAlignmentEnd == "end1" ? end1[iMagnetBorder] : end2[iMagnetBorder],
       debug = sliceDebug,
       showCaliper = showCaliper,
       help = help);
@@ -1354,5 +1380,6 @@ module HoseAdapter(
         }
       }
     }
+  }
   }
 }

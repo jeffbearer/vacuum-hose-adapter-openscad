@@ -51,6 +51,10 @@ Inspired by our favorite South Carolina inventor.
 * Styles: `iztwist_screw` and `iztwist_hook`
 * Nominal diameter: exact list `2.5,4,6` inches (for example `diameter=[0,2.5]`)
 * Wall and length are user-adjustable, but mating profile dimensions are fixed per nominal and do not scale.
+* Main app output selector: `Output_Mode = adapter | alignment_ring | iztwist_gasket`, with `Output_End = end1 | end2 | end3`.
+  * `iztwist_gasket` requires the selected end to use `iztwist_screw` or `iztwist_hook`.
+  * `alignment_ring` supports `end1` and `end2` only.
+  * Legacy `Draw_Alignment_Ring` is still supported for old presets/scripts when `Output_Mode="adapter"`.
 * Prototype notice: matching requires physical fit checks, hardware projection tuning, and may not match all third-party reference hardware yet.
 * Reference design: [HybridHobbyist (@IceDeck_241588)](https://www.printables.com/@IceDeck_241588) on Printables, [Dust Collector/Vacuum Hose Couplers Variety](https://www.printables.com/model/332587), CC BY-NC-SA 4.0. GPL-compatible licensing permission remains unresolved; do not submit this prototype upstream or assume the reference design has been relicensed.
 

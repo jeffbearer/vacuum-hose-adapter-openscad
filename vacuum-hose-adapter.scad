@@ -11,6 +11,10 @@ include <modules/vacuum-hose-adapter.scad>
 //TODO Ideas
 //All pre and post transition length. so a flat section before and after the taper.abs
 
+/* [Output] */
+Output_Mode = "adapter"; // [adapter:Adapter, alignment_ring:Alignment ring, iztwist_gasket:IzTwist TPU gasket]
+Output_End = "end1"; // [end1:End1, end2:End2, end3:End3]
+
 /* [Connector 1] */
 //Wall thickness
 End1_Wall_Thickness = 2; //0.01
@@ -408,8 +412,6 @@ End3_Nozzle_Chamfer_Percentage = 0; //0.1
 End3_Nozzle_Chamfer_Angle = 0; //0.1
 
 /* [Alignment Ring] */
-//draw just the alignment ring
-Draw_Alignment_Ring = "no"; //[end1: Draw end 1, end2: Draw end 2, no: Don't draw]
 //Alignment depth in to flange (mm)
 Alignment_Depth = 2; //0.1
 //Alignment upper width at widest part (mm)
@@ -443,6 +445,8 @@ fn = 0;
 
 /* [Hidden] */
 module end_of_customizer_opts() {}
+// Legacy output: draw just the alignment ring.
+Draw_Alignment_Ring = "no"; //[end1: Draw end 1, end2: Draw end 2, no: Don't draw]
 
 function selectedConnectorStyle(style, specialisedStyle) =
   specialisedStyle == "" || specialisedStyle == "disabled" ? style : specialisedStyle;
@@ -673,5 +677,7 @@ HoseAdapter(
   end3Color = End3_Color,
   transitionColor = Transition_Color,
   extensionColor = Extension_Color,
-  help = Enable_Help
+  help = Enable_Help,
+  outputMode = Output_Mode,
+  outputEnd = Output_End
 );
