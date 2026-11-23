@@ -395,9 +395,12 @@ End3_Nozzle_Offset = [0,0]; //0.1
 End3_Nozzle_Chamfer_Percentage = 0; //0.1
 End3_Nozzle_Chamfer_Angle = 0; //0.1
 
+/* [Output] */
+Output_Mode = "adapter"; // [adapter:Adapter, alignment_ring:Alignment ring, slowclamp:SlowClamp]
+// Output end selector for accessory modes.
+Output_End = "end1"; // [end1:End1, end2:End2, end3:End3]
+
 /* [Alignment Ring] */
-//draw just the alignment ring
-Draw_Alignment_Ring = "no"; //[end1: Draw end 1, end2: Draw end 2, no: Don't draw]
 //Alignment depth in to flange (mm)
 Alignment_Depth = 2; //0.1
 //Alignment upper width at widest part (mm)
@@ -408,6 +411,28 @@ Alignment_Lower_Width = 0.5; //0.1
 Alignment_Side_Clearance = 0.25;  //0.01
 //Alignment Depth Clearance, to prevent hitting bottom (mm).
 Alignment_Depth_Clearance = .75;  //0.01
+
+/* [SlowClamp Customizer] */
+// Axial width of the tapered bead-contact region, excluding the straight end supports.
+SlowClamp_Band_Width = 14; //0.1
+// Extra straight axial support beyond each end of the taper.
+SlowClamp_Edge_Support = 3; //0.1
+SlowClamp_Band_Wall = 5; //0.1
+SlowClamp_Radial_Clearance = 0.35; //0.05
+SlowClamp_Groove_Draft_Angle = 45; // [30:1:60]
+// Axial flat at the groove bottom; reduces outside diameter while retaining SlowClamp_Band_Wall.
+SlowClamp_Groove_Flat_Width = 6; //0.1
+SlowClamp_Joint_Gap = 0; //0.1
+SlowClamp_Split_Gap = 12; //0.1
+SlowClamp_Screw_Diameter = 5; //0.1
+SlowClamp_Screw_Clearance = 0.5; //0.1
+SlowClamp_Nut_Across_Flats = 8; //0.1
+SlowClamp_Nut_Thickness = 4; //0.1
+SlowClamp_Hardware_Clearance = 0.3; //0.1
+SlowClamp_Ear_Thickness = 8; //0.1
+SlowClamp_Ear_Projection = 14; //0.1
+// Added 45-degree gussets at the ear-to-band roots in plan view; zero disables.
+SlowClamp_Ear_Root_Chamfer = 3; //0.1
 
 /* [other] */
 //Slice model in half to be able to easy see inside
@@ -430,10 +455,24 @@ fs = 0.1;
 fn = 0;
 
 /* [Hidden] */
+// Legacy alignment-ring output selector for older presets/scripts.
+Draw_Alignment_Ring = "no"; //[end1: Draw end 1, end2: Draw end 2, no: Don't draw]
 module end_of_customizer_opts() {}
 
 function isOneidaConnector(style, specialisedStyle) =
   (specialisedStyle == "" || specialisedStyle == "disabled" ? style : specialisedStyle) == "oneida";
+
+function clampFactorySettings(settings, outputMode) =
+  outputMode == "slowclamp"
+    ? [for (i = [0:len(settings)-1]) i == iLength ? [0,0] : settings[i]]
+    : settings;
+
+function resolveRootConnectorSettings(settings, fitAdjustment, outputMode, outputEnd, endName) =
+  outputMode == "slowclamp" && outputEnd != endName
+    ? settings
+    : OneidaConnectorSettings(
+      settings = clampFactorySettings(settings, outputMode),
+      fitAdjustment = fitAdjustment);
 
 //Some online generators do not like direct setting of fa,fs,fn
 $fa = fa;
@@ -442,7 +481,7 @@ $fn = fn;
 
 //execution point
 HoseAdapter(
-  connector1 = OneidaConnectorSettings(settings = UserConnectorSettings(
+  connector1 = resolveRootConnectorSettings(settings = UserConnectorSettings(
     connector=1,
     style=End1_Style,
     specialisedStyle=End1_Specialised_Style,
@@ -492,9 +531,9 @@ HoseAdapter(
     extensionStopThickness=End1_Extension_StopThickness,
     extensionStopLength=End1_Extension_StopLength,
     extensionStopSymmetrical=End1_Extension_Stop_Symmetrical
-    ), fitAdjustment = End1_Oneida_Fit_Adjustment),
+    ), fitAdjustment = End1_Oneida_Fit_Adjustment, outputMode = Output_Mode, outputEnd = Output_End, endName = "end1"),
 
-  connector2 = OneidaConnectorSettings(settings = UserConnectorSettings(
+  connector2 = resolveRootConnectorSettings(settings = UserConnectorSettings(
     connector=2,
     style=End2_Style,
     specialisedStyle=End2_Specialised_Style,
@@ -551,9 +590,9 @@ HoseAdapter(
     extensionStopThickness=End2_Extension_StopThickness,
     extensionStopLength=End2_Extension_StopLength,
     extensionStopSymmetrical=End2_Extension_Stop_Symmetrical
-  ), fitAdjustment = End2_Oneida_Fit_Adjustment),
+  ), fitAdjustment = End2_Oneida_Fit_Adjustment, outputMode = Output_Mode, outputEnd = Output_End, endName = "end2"),
 
-  connector3 = OneidaConnectorSettings(settings = UserConnectorSettings(
+  connector3 = resolveRootConnectorSettings(settings = UserConnectorSettings(
     connector=3,
     style=End3_Style,
     specialisedStyle=End3_Specialised_Style,
@@ -610,7 +649,7 @@ HoseAdapter(
     extensionStopThickness=End3_Extension_StopThickness,
     extensionStopLength=End3_Extension_StopLength,
     extensionStopSymmetrical=End3_Extension_Stop_Symmetrical
-  ), fitAdjustment = End3_Oneida_Fit_Adjustment),
+  ), fitAdjustment = End3_Oneida_Fit_Adjustment, outputMode = Output_Mode, outputEnd = Output_End, endName = "end3"),
 
   transitionStyle = Transition_Style,
   transitionLength = Transition_Length,
@@ -646,5 +685,25 @@ HoseAdapter(
   end3Color = End3_Color,
   transitionColor = Transition_Color,
   extensionColor = Extension_Color,
-  help = Enable_Help
+  help = Enable_Help,
+
+  slowClampBandWidth = SlowClamp_Band_Width,
+  slowClampBandWall = SlowClamp_Band_Wall,
+  slowClampRadialClearance = SlowClamp_Radial_Clearance,
+  slowClampDraftAngle = SlowClamp_Groove_Draft_Angle,
+  slowClampGrooveFlatWidth = SlowClamp_Groove_Flat_Width,
+  slowClampEdgeSupport = SlowClamp_Edge_Support,
+  slowClampJointGap = SlowClamp_Joint_Gap,
+  slowClampSplitGap = SlowClamp_Split_Gap,
+  slowClampScrewDiameter = SlowClamp_Screw_Diameter,
+  slowClampScrewClearance = SlowClamp_Screw_Clearance,
+  slowClampNutAcrossFlats = SlowClamp_Nut_Across_Flats,
+  slowClampNutThickness = SlowClamp_Nut_Thickness,
+  slowClampHardwareClearance = SlowClamp_Hardware_Clearance,
+  slowClampEarThickness = SlowClamp_Ear_Thickness,
+  slowClampEarProjection = SlowClamp_Ear_Projection,
+  slowClampEarRootChamfer = SlowClamp_Ear_Root_Chamfer,
+
+  outputMode = Output_Mode,
+  outputEnd = Output_End
 );

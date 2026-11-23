@@ -45,6 +45,38 @@ ductwork. The clamp is separate hardware and is not printed by this module.
 * `fitAdjustment` (mm): Oneida-local diametral fit adjustment; positive increases mating diameters, negative reduces them.
 * 5-inch nominal is physically verified. Other nominal sizes are fixed-offset extrapolations and are not manufacturer-guaranteed.
 
+### SlowClamp accessory (experimental)
+The separate [SlowClamp example](demos/oneida_slow_clamp.scad) generates a
+hinge-free screw-tightened band with a tapered groove and a side-loading
+captured-nut pocket. Select `clamp` for the printable band, or `assembly` /
+`section` to inspect the opposed beads and metal hardware.
+
+The generic accessory lives in `modules/accessories/slow_clamp.scad`; its
+Oneida wrapper reuses the connector's measured dimensions. The initial 5-inch
+prototype uses an M5 screw and nut. The 14 mm tapered groove has a 3 mm straight
+reinforcing lip beyond each end, giving a 20 mm overall width. Both ear roots
+have 3 mm diagonal reinforcing chamfers. A 6 mm axial flat replaces the unused
+groove apex, reducing the band's outside diameter by 6 mm while retaining a
+5 mm minimum wall and the original bead-contact slopes. The flat remains about
+1.3 mm radially beyond the bead OD in the free-fit model. These dimensions are
+adjustable in the example; set `Groove_Flat_Width` to `0` for the previous pointed
+profile. Band flex, tightening strength, and fit
+still need physical testing; this is not a rated clamp. No connector settings
+or mating-bead geometry are changed by the accessory.
+
+In `vacuum-hose-adapter.scad`, the single visible output selector is now
+`Output_Mode` with `adapter`, `alignment_ring`, and `slowclamp`, plus
+`Output_End` (`end1`, `end2`, `end3`) for accessory targeting. Alignment-ring
+output supports only `end1`/`end2`. Legacy `Draw_Alignment_Ring` presets and
+API use remain supported in adapter mode, and conflict clearly with explicit
+non-adapter `Output_Mode` selections.
+
+The existing render suite does not require Python. For an optional CGAL
+app-versus-standalone mesh comparison, run `scripts/test-render.ps1` with
+`-CompareMeshes -PythonPath <python-executable>` in addition to its usual
+OpenSCAD arguments. This comparison needs Python 3.9+ (standard library only)
+and the development OpenSCAD CLI used by the render suite.
+
 ### Flat connection
 Intended for connection to a tool. To achieve this the transition section is set
 to flat, the transition length becomes the thickness. The flat area will be from

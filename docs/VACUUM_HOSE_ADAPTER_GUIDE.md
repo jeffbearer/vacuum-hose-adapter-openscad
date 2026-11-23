@@ -38,9 +38,18 @@ HoseAdapter(
   showCaliper = false,             // Render dimension calipers
   end1Color = ["", 1],
   end2Color = ["", 1],
-  transitionColor = ["", 1]
+  transitionColor = ["", 1],
+  outputMode = "adapter",          // "adapter", "alignment_ring", "slowclamp"
+  outputEnd = "end1"               // "end1", "end2", "end3"
 );
 ```
+
+`outputMode="adapter"` preserves legacy behavior and geometry, including the
+legacy `drawAlignmentRing` selector. `outputMode="alignment_ring"` uses
+`outputEnd` (`end1`/`end2` only). `outputMode="slowclamp"` renders only the
+selected end's accessory and ignores transition/unselected-end geometry checks.
+If `drawAlignmentRing` is non-`"no"` while `outputMode` is non-adapter, the API
+asserts a clear conflict.
 
 ---
 

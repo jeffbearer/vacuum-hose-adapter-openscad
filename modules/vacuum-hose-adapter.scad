@@ -14,6 +14,7 @@ include <modules_pipe.scad>
 include <modules_slipring.scad>
 
 include <connectors/connectors.scad>
+include <accessories/oneida_slow_clamp.scad>
 
 //colorSetting=["colour", alpha]
 //defaultColor="colour"
@@ -23,6 +24,9 @@ function getColor(colorSetting, defaultColor) =
   let(
     c = colorSetting[0] == "" ? defaultColor : colorSetting[0],
     a = is_num(colorSetting[1]) && colorSetting[1] >=0 && colorSetting[1] <=1 ? colorSetting[1] : 1) [c, a];
+
+function connectorNeckOuterDiameter(connectorSettings) =
+  connectorSettings[iInnerEndDiameter] + connectorSettings[iWallThickness] * 2;
 
 function renderModeEnabled(mode) =
   assert(mode == "disable" || mode == "enable" || mode == "preview only",
@@ -930,11 +934,53 @@ module HoseAdapter(
   end3Color = [DefaultEnd3Color,1],
   transitionColor = [DefaultTransitionColor,1],
   extensionColor = [DefaultExtensionColor,1],
-  help = false
+  help = false,
+
+  slowClampBandWidth = 14,
+  slowClampBandWall = 5,
+  slowClampRadialClearance = 0.35,
+  slowClampDraftAngle = 45,
+  slowClampGrooveFlatWidth = 6,
+  slowClampEdgeSupport = 3,
+  slowClampJointGap = 0,
+  slowClampSplitGap = 12,
+  slowClampScrewDiameter = 5,
+  slowClampScrewClearance = 0.5,
+  slowClampNutAcrossFlats = 8,
+  slowClampNutThickness = 4,
+  slowClampHardwareClearance = 0.3,
+  slowClampEarThickness = 8,
+  slowClampEarProjection = 14,
+  slowClampEarRootChamfer = 3,
+
+  outputMode = "adapter",
+  outputEnd = "end1"
 ){
   $gha=[["connector1",[0,0,0]],["connector2",[0,0,0]],["transition",[0,0,0]]];
+  assert(outputMode == "adapter" || outputMode == "alignment_ring" || outputMode == "slowclamp",
+    str("outputMode must be one of: adapter, alignment_ring, slowclamp. Provided: ", outputMode));
+  assert(outputEnd == "end1" || outputEnd == "end2" || outputEnd == "end3",
+    str("outputEnd must be one of: end1, end2, end3. Provided: ", outputEnd));
+  assert(drawAlignmentRing == "no" || drawAlignmentRing == "end1" || drawAlignmentRing == "end2",
+    str("drawAlignmentRing must be one of: no, end1, end2. Provided: ", drawAlignmentRing));
+  assert(!(outputMode != "adapter" && drawAlignmentRing != "no"),
+    str("drawAlignmentRing=", drawAlignmentRing, " conflicts with outputMode=", outputMode, ". Set drawAlignmentRing=\"no\" when outputMode is not adapter."));
+  assert(!(outputMode == "alignment_ring" && outputEnd == "end3"),
+    "Alignment ring output supports only end1 or end2");
 
-  end1 = getConnectorSettings(
+  requireEnd1 =
+    outputMode == "adapter" ||
+    outputEnd == "end1";
+  requireEnd2 =
+    outputMode == "adapter" ||
+    (outputMode == "alignment_ring" && outputEnd == "end2") ||
+    (outputMode == "slowclamp" && outputEnd == "end2");
+  requireEnd3 =
+    outputMode == "adapter" ||
+    (outputMode == "slowclamp" && outputEnd == "end3");
+  ringOutputEnd = outputMode == "alignment_ring" ? outputEnd : drawAlignmentRing;
+
+  end1 = requireEnd1 ? getConnectorSettings(
     userSettings=connector1,
     slipRingSettings=calculate_slipring_size(slipring=connector1[iExtensionSlipRing], width=connector1[iExtensionSlipRingWidth]),
     alignmentDepth=alignmentDepth,
@@ -944,9 +990,9 @@ module HoseAdapter(
     alignmentDepthClearance=alignmentDepthClearance,
     adapterColor = getColor(end1Color, DefaultEnd1Color),
     con1Measurement=connector1[iMeasurement],
-    con1WallThickness=connector1[iWallThickness]);
+    con1WallThickness=connector1[iWallThickness]) : undef;
 
-  end2 = getConnectorSettings(
+  end2 = requireEnd2 ? getConnectorSettings(
     userSettings=connector2,
     slipRingSettings=calculate_slipring_size(slipring=connector2[iExtensionSlipRing], width=connector2[iExtensionSlipRingWidth]),
     alignmentDepth=alignmentDepth,
@@ -955,11 +1001,11 @@ module HoseAdapter(
     alignmentSideClearance=alignmentSideClearance,
     alignmentDepthClearance=alignmentDepthClearance,
     adapterColor = getColor(end2Color, DefaultEnd2Color),
-    con1Measurement=end1[iMeasurement],
-    con1OuterEndDiameter=end1[iInterfaceOuterDiameter],
-    con1WallThickness=end1[iWallThickness]);
+    con1Measurement=requireEnd1 ? end1[iMeasurement] : connector2[iMeasurement],
+    con1OuterEndDiameter=requireEnd1 ? end1[iInterfaceOuterDiameter] : measurement_to_mm(connector2[iDiameter]) + connector2[iWallThickness] * 2,
+    con1WallThickness=requireEnd1 ? end1[iWallThickness] : connector2[iWallThickness]) : undef;
 
-  end3 = getConnectorSettings(
+  end3 = requireEnd3 ? getConnectorSettings(
     userSettings=connector3,
     slipRingSettings=calculate_slipring_size(slipring=connector3[iExtensionSlipRing], width=connector3[iExtensionSlipRingWidth]),
     alignmentDepth=alignmentDepth,
@@ -968,121 +1014,147 @@ module HoseAdapter(
     alignmentSideClearance=alignmentSideClearance,
     alignmentDepthClearance=alignmentDepthClearance,
     adapterColor = getColor(end3Color, DefaultEnd3Color),
-    con1Measurement=end1[iMeasurement],
-    con1OuterEndDiameter=end1[iInterfaceOuterDiameter],
-    con1WallThickness=end1[iWallThickness]);
+    con1Measurement=requireEnd1 ? end1[iMeasurement] : connector3[iMeasurement],
+    con1OuterEndDiameter=requireEnd1 ? end1[iInterfaceOuterDiameter] : measurement_to_mm(connector3[iDiameter]) + connector3[iWallThickness] * 2,
+    con1WallThickness=requireEnd1 ? end1[iWallThickness] : connector3[iWallThickness]) : undef;
 
-  echoConnector("end1", end1, help);
-  echoConnector("end2", end2, help);
-  echoConnector("end3", end3, transitionHullCenter == "end3" ? help : false);
+  if (requireEnd1)
+    echoConnector("end1", end1, help);
+  if (requireEnd2)
+    echoConnector("end2", end2, help);
+  if (requireEnd3)
+    echoConnector("end3", end3, transitionHullCenter == "end3" ? help : false);
 
   //Transition settings
   // transitionLength is not wanted for sweep
-  _transitionAngle = (transitionStyle == "flat") ? 0 : transitionAngle;
-  _transitionStyle = _transitionAngle == 0 && transitionStyle == "organicbend" ? "bend+taper" : transitionStyle;
+  _transitionAngle = outputMode == "adapter" ? ((transitionStyle == "flat") ? 0 : transitionAngle) : 0;
+  _transitionStyle = outputMode == "adapter"
+    ? (_transitionAngle == 0 && transitionStyle == "organicbend" ? "bend+taper" : transitionStyle)
+    : "none";
 
-  echo("_transitionLength", _transitionLength=_transitionLength, end1_iInterfaceOuterDiameter=end1[iInterfaceOuterDiameter], end2iInterfaceOuterDiameter=end2[iInterfaceOuterDiameter], end1iInterfaceInnerDiameter=end1[iInterfaceInnerDiameter], end2iInterfaceInnerDiameter=end2[iInterfaceInnerDiameter]);
-  _transitionLength = _transitionStyle == "organicbend" //|| _transitionStyle == "hull"
-    ? 0
-    : transitionLength == 0
-      ? max(
-          abs(end1[iInterfaceOuterDiameter] - end2[iInterfaceOuterDiameter])/2,
-          abs(end1[iInterfaceInnerDiameter] - end2[iInterfaceInnerDiameter])/2)+(end1[iInterfaceWallThickness]/2+end2[iInterfaceWallThickness]/2)
-      : transitionLength;
+  if (outputMode == "adapter")
+    echo("_transitionLength", _transitionLength=_transitionLength, end1_iInterfaceOuterDiameter=end1[iInterfaceOuterDiameter], end2iInterfaceOuterDiameter=end2[iInterfaceOuterDiameter], end1iInterfaceInnerDiameter=end1[iInterfaceInnerDiameter], end2iInterfaceInnerDiameter=end2[iInterfaceInnerDiameter]);
 
-  bendPipeDiameter = transitionBendPipeDiameter == "custom"
-    ? transitionCustomBendPipeDiameter
-    : transitionBendPipeDiameter == "smaller"
-      ? min(end1[iInterfaceInnerDiameter], end2[iInterfaceInnerDiameter])
-      : max(end1[iInterfaceInnerDiameter], end2[iInterfaceInnerDiameter]);
+  _transitionLength = outputMode == "adapter"
+    ? (_transitionStyle == "organicbend" //|| _transitionStyle == "hull"
+      ? 0
+      : transitionLength == 0
+        ? max(
+            abs(end1[iInterfaceOuterDiameter] - end2[iInterfaceOuterDiameter])/2,
+            abs(end1[iInterfaceInnerDiameter] - end2[iInterfaceInnerDiameter])/2)+(end1[iInterfaceWallThickness]/2+end2[iInterfaceWallThickness]/2)
+        : transitionLength)
+    : 0;
 
-  assert(transitionBendPipeDiameter != "custom" || transitionCustomBendPipeDiameter > 0, "Transition custom bend pipe diameter must be greater than zero");
+  bendPipeDiameter = outputMode == "adapter"
+    ? (transitionBendPipeDiameter == "custom"
+      ? transitionCustomBendPipeDiameter
+      : transitionBendPipeDiameter == "smaller"
+        ? min(end1[iInterfaceInnerDiameter], end2[iInterfaceInnerDiameter])
+        : max(end1[iInterfaceInnerDiameter], end2[iInterfaceInnerDiameter]))
+    : 0;
+
+  if (outputMode == "adapter")
+    assert(transitionBendPipeDiameter != "custom" || transitionCustomBendPipeDiameter > 0, "Transition custom bend pipe diameter must be greater than zero");
 
   // Preserve the wall of a matching end. For an in-between custom bore,
   // interpolate the wall; outside that range, use the nearest end's wall.
-  bendPipeWallThickness = end1[iInterfaceInnerDiameter] == end2[iInterfaceInnerDiameter]
-    ? max(end1[iInterfaceWallThickness], end2[iInterfaceWallThickness])
-    : let(
-        blend = max(0, min(1,
-          (bendPipeDiameter - end1[iInterfaceInnerDiameter]) /
-          (end2[iInterfaceInnerDiameter] - end1[iInterfaceInnerDiameter]))))
-      end1[iInterfaceWallThickness] +
-        blend * (end2[iInterfaceWallThickness] - end1[iInterfaceWallThickness]);
+  bendPipeWallThickness = outputMode == "adapter"
+    ? (end1[iInterfaceInnerDiameter] == end2[iInterfaceInnerDiameter]
+      ? max(end1[iInterfaceWallThickness], end2[iInterfaceWallThickness])
+      : let(
+          blend = max(0, min(1,
+            (bendPipeDiameter - end1[iInterfaceInnerDiameter]) /
+            (end2[iInterfaceInnerDiameter] - end1[iInterfaceInnerDiameter]))))
+        end1[iInterfaceWallThickness] +
+          blend * (end2[iInterfaceWallThickness] - end1[iInterfaceWallThickness]))
+    : 0;
 
-  bendPipeOuterDiameter = bendPipeDiameter + bendPipeWallThickness*2;
-  bendDiameterChangeBefore = abs(bendPipeDiameter - end1[iInterfaceInnerDiameter]);
-  bendDiameterChangeAfter = abs(end2[iInterfaceInnerDiameter] - bendPipeDiameter);
-  bendTotalDiameterChange = bendDiameterChangeBefore + bendDiameterChangeAfter;
+  bendPipeOuterDiameter = outputMode == "adapter" ? bendPipeDiameter + bendPipeWallThickness*2 : 0;
+  bendDiameterChangeBefore = outputMode == "adapter" ? abs(bendPipeDiameter - end1[iInterfaceInnerDiameter]) : 0;
+  bendDiameterChangeAfter = outputMode == "adapter" ? abs(end2[iInterfaceInnerDiameter] - bendPipeDiameter) : 0;
+  bendTotalDiameterChange = outputMode == "adapter" ? bendDiameterChangeBefore + bendDiameterChangeAfter : 0;
 
-      // With automatic length, size each taper independently so the steepest
-      // of its inner or outer surfaces is approximately 45 degrees.
-      bendTaperLengthBefore = transitionLength == 0
-        ? max(
-            bendDiameterChangeBefore/2,
-            abs(bendPipeOuterDiameter - end1[iInterfaceOuterDiameter])/2)
-        : bendTotalDiameterChange == 0
-          ? 0
-          : transitionLength * bendDiameterChangeBefore / bendTotalDiameterChange;
-      bendTaperLengthAfter = transitionLength == 0
-        ? max(
-            bendDiameterChangeAfter/2,
-            abs(end2[iInterfaceOuterDiameter] - bendPipeOuterDiameter)/2)
-        : bendTotalDiameterChange == 0
-          ? 0
-          : transitionLength * bendDiameterChangeAfter / bendTotalDiameterChange;
+  // With automatic length, size each taper independently so the steepest
+  // of its inner or outer surfaces is approximately 45 degrees.
+  bendTaperLengthBefore = outputMode == "adapter"
+    ? (transitionLength == 0
+      ? max(
+          bendDiameterChangeBefore/2,
+          abs(bendPipeOuterDiameter - end1[iInterfaceOuterDiameter])/2)
+      : bendTotalDiameterChange == 0
+        ? 0
+        : transitionLength * bendDiameterChangeBefore / bendTotalDiameterChange)
+    : 0;
+  bendTaperLengthAfter = outputMode == "adapter"
+    ? (transitionLength == 0
+      ? max(
+          bendDiameterChangeAfter/2,
+          abs(end2[iInterfaceOuterDiameter] - bendPipeOuterDiameter)/2)
+      : bendTotalDiameterChange == 0
+        ? 0
+        : transitionLength * bendDiameterChangeAfter / bendTotalDiameterChange)
+    : 0;
 
-      //Calculate the bend radius
-      //organicbend, the '0' value must be max of connector 1 or 2 diameter, plus the wall thickness * 2 otherwise it will clip, then add provided radius.
-      //transition the '0' value must be end 1 diameter/2 + wall thickenss *2 to prevent clipping, then addd provided radius.
+  //Calculate the bend radius
+  //organicbend, the '0' value must be max of connector 1 or 2 diameter, plus the wall thickness * 2 otherwise it will clip, then add provided radius.
+  //transition the '0' value must be end 1 diameter/2 + wall thickenss *2 to prevent clipping, then addd provided radius.
 
-      //((end2[iInnerStartDiameter] + connector1WallThickness)/ sin(_transitionAngle / 2)/2)/ sin(_transitionAngle) + transitionBendRadius
-      //For organic bend only
-      taperedAverageDiameter = (max(end1[iInterfaceOuterDiameter],end2[iOuterStartDiameter])*2 + min(end1[iInterfaceOuterDiameter],end2[iOuterStartDiameter]))/3;
+  //((end2[iInnerStartDiameter] + connector1WallThickness)/ sin(_transitionAngle / 2)/2)/ sin(_transitionAngle) + transitionBendRadius
+  //For organic bend only
+  taperedAverageDiameter = outputMode == "adapter"
+    ? (max(end1[iInterfaceOuterDiameter],end2[iOuterStartDiameter])*2 + min(end1[iInterfaceOuterDiameter],end2[iOuterStartDiameter]))/3
+    : 0;
 
-      hoseSpacer = end2[iWallThickness];
-      shapeOverlap = ((end1[iInterfaceOuterDiameter]/2-hoseSpacer)-(cos(_transitionAngle)*end2[iInterfaceOuterDiameter]))/sin(_transitionAngle);
-      lengthInHull = _transitionStyle == "hull"
-        ? (shapeOverlap > 0 ? 0 : shapeOverlap * -1) + _transitionLength
-        : 0;
-      transitionCenterHeight = transitionHullCenterHeight == 0 ? lengthInHull * 2 : transitionHullCenterHeight;
+  hoseSpacer = outputMode == "adapter" ? end2[iWallThickness] : 0;
+  shapeOverlap = outputMode == "adapter" && _transitionAngle != 0
+    ? ((end1[iInterfaceOuterDiameter]/2-hoseSpacer)-(cos(_transitionAngle)*end2[iInterfaceOuterDiameter]))/sin(_transitionAngle)
+    : 0;
+  lengthInHull = outputMode == "adapter" && _transitionStyle == "hull"
+    ? (shapeOverlap > 0 ? 0 : shapeOverlap * -1) + _transitionLength
+    : 0;
+  transitionCenterHeight = outputMode == "adapter"
+    ? (transitionHullCenterHeight == 0 ? lengthInHull * 2 : transitionHullCenterHeight)
+    : 0;
 
-      //Push end horizontially out from verticle center line
-      edgeOffset = _transitionStyle == "hull"
-        ? (shapeOverlap > 50
-          ? (end1[iInterfaceOuterDiameter] - end2[iInterfaceOuterDiameter])/2-shapeOverlap/2 + transitionHullyOffset
-          : (end1[iInterfaceOuterDiameter] - end2[iInterfaceOuterDiameter])/2 + transitionHullyOffset) * cos(_transitionAngle)
-        : 0;
+  //Push end horizontially out from verticle center line
+  edgeOffset = outputMode == "adapter" && _transitionStyle == "hull"
+    ? ((shapeOverlap > 50
+      ? (end1[iInterfaceOuterDiameter] - end2[iInterfaceOuterDiameter])/2-shapeOverlap/2 + transitionHullyOffset
+      : (end1[iInterfaceOuterDiameter] - end2[iInterfaceOuterDiameter])/2 + transitionHullyOffset) * cos(_transitionAngle))
+    : 0;
 
-     function bend_radius(transitionAngle, transitionBendRadius, end1OuterEndDiameter, end2OuterEndDiameter, taperedAverageDiameter) =
-         let(organic_bend_radius = transitionEnd2Count > 1
-                ? -(taperedAverageDiameter/2)/(cos(transitionAngle)-1)-taperedAverageDiameter/2 + transitionBendRadius
-                : taperedAverageDiameter + transitionBendRadius,
-             bendPipeOuterDiameter = bendPipeDiameter + bendPipeWallThickness*2,
-             bend_taper_radius = transitionEnd2Count > 1
-                ? -(bendPipeOuterDiameter/2)/(cos(transitionAngle)-1)-bendPipeOuterDiameter/2 + transitionBendRadius
-                : bendPipeOuterDiameter/2 + transitionBendRadius,
-             taper_bend_radius = transitionEnd2Count > 1
-                ? -(end2OuterEndDiameter/2)/(cos(transitionAngle)-1)-end2OuterEndDiameter/2 + transitionBendRadius
-                : end2OuterEndDiameter/2 + transitionBendRadius,
-             hull_radius = 0 )
-                  transitionStyle == "organicbend" ? organic_bend_radius
-                  : _transitionStyle == "bend+taper" ? bend_taper_radius
-                  : _transitionStyle == "taper+bend" ? taper_bend_radius
-                  : _transitionStyle == "hull" ? hull_radius
-                  : 0;
+  function bend_radius(transitionAngle, transitionBendRadius, end1OuterEndDiameter, end2OuterEndDiameter, taperedAverageDiameter) =
+      let(organic_bend_radius = transitionEnd2Count > 1
+              ? -(taperedAverageDiameter/2)/(cos(transitionAngle)-1)-taperedAverageDiameter/2 + transitionBendRadius
+              : taperedAverageDiameter + transitionBendRadius,
+          bendPipeOuterDiameter = bendPipeDiameter + bendPipeWallThickness*2,
+          bend_taper_radius = transitionEnd2Count > 1
+              ? -(bendPipeOuterDiameter/2)/(cos(transitionAngle)-1)-bendPipeOuterDiameter/2 + transitionBendRadius
+              : bendPipeOuterDiameter/2 + transitionBendRadius,
+          taper_bend_radius = transitionEnd2Count > 1
+              ? -(end2OuterEndDiameter/2)/(cos(transitionAngle)-1)-end2OuterEndDiameter/2 + transitionBendRadius
+              : end2OuterEndDiameter/2 + transitionBendRadius,
+          hull_radius = 0 )
+                transitionStyle == "organicbend" ? organic_bend_radius
+                : _transitionStyle == "bend+taper" ? bend_taper_radius
+                : _transitionStyle == "taper+bend" ? taper_bend_radius
+                : _transitionStyle == "hull" ? hull_radius
+                : 0;
 
-      //end hull settings
-      bendRadius = bend_radius(
-        transitionAngle=_transitionAngle,
-        transitionBendRadius=transitionBendRadius,
-        end1OuterEndDiameter=end1[iInterfaceOuterDiameter],
-        end2OuterEndDiameter=end2[iInterfaceOuterDiameter],
-        taperedAverageDiameter=taperedAverageDiameter);
+  //end hull settings
+  bendRadius = outputMode == "adapter"
+    ? bend_radius(
+      transitionAngle=_transitionAngle,
+      transitionBendRadius=transitionBendRadius,
+      end1OuterEndDiameter=end1[iInterfaceOuterDiameter],
+      end2OuterEndDiameter=end2[iInterfaceOuterDiameter],
+      taperedAverageDiameter=taperedAverageDiameter)
+    : 0;
 
-  if(drawAlignmentRing == "end1" || drawAlignmentRing == "end2")
+  if(ringOutputEnd == "end1" || ringOutputEnd == "end2")
   {
     adapterAlignmentRing(
-      centerDiameter = drawAlignmentRing == "end1"
+      centerDiameter = ringOutputEnd == "end1"
         ? end1[iInnerStartDiameter] + end1[iMagnetBorder] + alignmentUpperWidth
         : end2[iInnerStartDiameter] + end2[iMagnetBorder] + alignmentUpperWidth,
       alignmentDepth = alignmentDepth,
@@ -1090,10 +1162,33 @@ module HoseAdapter(
       alignmentLowerWidth = alignmentLowerWidth,
       alignmentSideClearance = alignmentSideClearance,
       alignmentDepthClearance = alignmentDepthClearance,
-      magnetBorder = drawAlignmentRing == "end1" ? end1[iMagnetBorder] : end2[iMagnetBorder],
+      magnetBorder = ringOutputEnd == "end1" ? end1[iMagnetBorder] : end2[iMagnetBorder],
       debug = sliceDebug,
       showCaliper = showCaliper,
       help = help);
+  } else if (outputMode == "slowclamp") {
+    activeEnd = outputEnd == "end1" ? end1 : outputEnd == "end2" ? end2 : end3;
+    assert(activeEnd[iStyle] == "oneida",
+      str("SlowClamp output requires the selected output end to be Oneida. outputEnd=", outputEnd, " style=", activeEnd[iStyle]));
+    OneidaSlowClampFromNeckOuterDiameter(
+      neckOuterDiameter = connectorNeckOuterDiameter(activeEnd),
+      bandWidth = slowClampBandWidth,
+      bandWall = slowClampBandWall,
+      radialClearance = slowClampRadialClearance,
+      draftAngle = slowClampDraftAngle,
+      grooveFlatWidth = slowClampGrooveFlatWidth,
+      edgeSupport = slowClampEdgeSupport,
+      jointGap = slowClampJointGap,
+      splitGap = slowClampSplitGap,
+      screwDiameter = slowClampScrewDiameter,
+      screwClearance = slowClampScrewClearance,
+      nutAcrossFlats = slowClampNutAcrossFlats,
+      nutThickness = slowClampNutThickness,
+      hardwareClearance = slowClampHardwareClearance,
+      earThickness = slowClampEarThickness,
+      earProjection = slowClampEarProjection,
+      earRootChamfer = slowClampEarRootChamfer,
+      part = "clamp");
   } else {
     difference()
     {
