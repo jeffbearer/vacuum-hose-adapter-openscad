@@ -108,7 +108,8 @@ function Test-OpenSCAD(
         $saveAppend = '',
         [string]$expectedErrorPattern = '',
         [string]$AllowedWarningRegex = '',
-        [ValidateSet('Manifold', 'CGAL')][string]$Backend = 'Manifold')
+        [ValidateSet('Manifold', 'CGAL')][string]$Backend = 'Manifold',
+        [switch]$ExpectedEmpty)
 {
     $scadScriptPath = $TargetFile.FullName
 
@@ -132,6 +133,17 @@ function Test-OpenSCAD(
     $executionResult = (Start-ProcessWithOutputs -commandPath $script:OpenScadPath -ArgumentList $cmdArgs)
 
     write-host "openscad executionTime: $($executionResult.executionTime)"
+
+    if ($ExpectedEmpty) {
+        if ($executionResult.ExitCode -ne 0 -and
+            $executionResult.stderr -match 'Current top level object is empty' -and
+            $executionResult.stderr -notmatch '(?im)^(warning|error):') {
+            write-Host "Geometry differences are empty." -ForegroundColor Green
+            return $true
+        }
+        Write-Warning "Geometry comparison failed: $($executionResult.stderr)"
+        return $false
+    }
 
     $isExpectedFailure = -not [string]::IsNullOrWhiteSpace($expectedErrorPattern)
     $isParserOrIncludeFailure = $executionResult.stderr -match "(?im)(parser error|syntax error|can't open include file|can't open library|unable to open file)"
@@ -188,6 +200,13 @@ $oneidaExpectedFailureCases = @(
     @{ case = "factory_unsupported_nominal"; pattern = "Unsupported Oneida nominal diameter" }
 )
 
+$hoseThreadExpectedFailureCases = @(
+    @{ case = "outer_measurement"; pattern = "inward_triangle is only supported for connectorMeasurement='inner'" },
+    @{ case = "taper"; pattern = "inward_triangle does not support taper" },
+    @{ case = "width_equal_pitch"; pattern = "inward_triangle requires threadToothWidth < threadPitch" },
+    @{ case = "width_above_pitch"; pattern = "inward_triangle requires threadToothWidth < threadPitch" }
+)
+
 $oneidaDemoRelativePaths = @(
     "demos/oneida_adapter.scad",
     "demos/oneida_fit_ring.scad"
@@ -213,6 +232,25 @@ $ScadScriptFolders |ForEach-Object {
                 $success = Test-OpenSCAD -TargetFile $TargetFile -saveResults $saveResults -cmdArgsInput $input_args -SaveAppend "_$($caseName)" -expectedErrorPattern $_.pattern
                 if(!$success){
                     $failed = $true
+                }
+            }
+        }
+        elseif($TargetFile.BaseName -ieq 'hose_thread_expected_failures'){
+            foreach ($case in $hoseThreadExpectedFailureCases) {
+                $input_args = " -D `"Case=`"`"$($case.case)`"`"`""
+                $success = Test-OpenSCAD -TargetFile $TargetFile -saveResults $saveResults -cmdArgsInput $input_args -SaveAppend "_$($case.case)" -expectedErrorPattern $case.pattern
+                if(!$success){
+                    $failed = $true
+                }
+            }
+        }
+        elseif($TargetFile.BaseName -ieq 'hose_thread_geometry'){
+            foreach ($layout in @('flat', 'hull')) {
+                foreach ($case in @('enabled', 'reversed')) {
+                    $success = Test-OpenSCAD -TargetFile $TargetFile -ExpectedEmpty -cmdArgsInput " -D `"Case=`"`"$case`"`"`" -D `"Layout=`"`"$layout`"`"`""
+                    if(!$success){
+                        $failed = $true
+                    }
                 }
             }
         }

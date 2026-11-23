@@ -57,9 +57,10 @@ iExtensionStopThickness=iExtensionSlipRingSupportSpacing+1;
 iExtensionStopLength=iExtensionStopThickness+1;
 iExtensionStopSymmetrical=iExtensionStopLength+1;
 iAlignmentRing=iExtensionStopSymmetrical+1;
+iThreadToothWidth=iAlignmentRing+1;
 
 //end of user connector settings
-iAlignmentDepth=iAlignmentRing+1;
+iAlignmentDepth=iThreadToothWidth+1;
 iAlignmentUpperWidth=iAlignmentDepth+1;
 iAlignmentLowerWidth=iAlignmentUpperWidth+1;
 iAlignmentSideClearance=iAlignmentLowerWidth+1;
@@ -77,7 +78,7 @@ iInterfaceLength=iInterfaceWallThickness+1;
 iExtensionTaperLength=iInterfaceLength+1;
 iExtensionTotalLength=iExtensionTaperLength+1;
 
-userSettingsLength = iAlignmentRing+1;
+userSettingsLength = iThreadToothWidth+1;
 connectorSettingsLength = iExtensionTotalLength+1;
 
 module echoConnector(name, end, help){
@@ -102,6 +103,7 @@ module echoConnector(name, end, help){
     "iThreadPitch", end[iThreadPitch],
     "iThreadToothAngle", end[iThreadToothAngle],
     "iThreadToothHeight", end[iThreadToothHeight],
+    "iThreadToothWidth", len(end) > iThreadToothWidth ? end[iThreadToothWidth] : 0,
     "iMagnetCount", end[iMagnetCount],
     "iMagnetDiameter", end[iMagnetDiameter],
     "iMagnetThickness", end[iMagnetThickness],
@@ -238,7 +240,8 @@ function UserConnectorSettings(
   extensionSlipRingSupportSpacing=5,
   extensionStopThickness=0,
   extensionStopLength=0,
-  extensionStopSymmetrical=false
+  extensionStopSymmetrical=false,
+  threadToothWidth=0
   ) =
   let(result = [
     connector,
@@ -299,12 +302,13 @@ function UserConnectorSettings(
     extensionStopThickness,
     extensionStopLength,
     extensionStopSymmetrical,
-    alignmentRing])
+    alignmentRing,
+    threadToothWidth])
     ValidateUserConnectorSettings(result);
 
 function ValidateUserConnectorSettings(userSettings) =
   // Parameter validation asserts
-  assert(is_list(userSettings) && len(userSettings) >= userSettingsLength, str("UserSettings must be a list of length ", userSettingsLength ," len:", len(userSettings)))
+  assert(is_list(userSettings) && len(userSettings) >= iAlignmentRing+1, str("UserSettings must be a list of length at least ", iAlignmentRing+1 ," len:", len(userSettings)))
 
   assert(is_num(userSettings[iConnector]) && userSettings[iConnector] >= 0, str("connector must be a non-negative number:", userSettings[iConnector]))
   assert(is_string(userSettings[iStyle]), str("style must be a string:", userSettings[iStyle]))
@@ -327,6 +331,7 @@ function ValidateUserConnectorSettings(userSettings) =
   assert(is_num(userSettings[iThreadPitch]) && userSettings[iThreadPitch] >= 0, str("threadPitch must be a positive number:", userSettings[iThreadPitch]))
   assert(is_num(userSettings[iThreadToothAngle]) && userSettings[iThreadToothAngle] >= 0 && userSettings[iThreadToothAngle] <= 90, str("threadToothAngle must be between 0 and 90:", userSettings[iThreadToothAngle]))
   assert(is_num(userSettings[iThreadToothHeight]) && userSettings[iThreadToothHeight] >= 0, str("threadToothHeight must be a non-negative number:", userSettings[iThreadToothHeight]))
+  assert(len(userSettings) <= iThreadToothWidth || (is_num(userSettings[iThreadToothWidth]) && userSettings[iThreadToothWidth] >= 0), str("threadToothWidth must be a non-negative number:", userSettings[iThreadToothWidth]))
   assert(is_num(userSettings[iMagnetCount]) && userSettings[iMagnetCount] >= 0, str("magnetCount must be a non-negative number:", userSettings[iMagnetCount]))
   assert(is_num(userSettings[iMagnetDiameter]) && userSettings[iMagnetDiameter] >= 0, str("magnetDiameter must be a non-negative number:", userSettings[iMagnetDiameter]))
   assert(is_num(userSettings[iMagnetThickness]) && userSettings[iMagnetThickness] >= 0, str("magnetThickness must be a non-negative number:", userSettings[iMagnetThickness]))
@@ -529,6 +534,7 @@ function getConnectorSettings(
         extStopLength,
         userSettings[iExtensionStopSymmetrical],
         userSettings[iAlignmentRing],
+        len(userSettings) > iThreadToothWidth ? userSettings[iThreadToothWidth] : 0,
 
         //End of user settings
         alignmentDepth,

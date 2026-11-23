@@ -6,6 +6,11 @@ use <../modules_threads.scad>
 
 connector_hose_demo = false;
 
+// Cancel the helper's bore compensation so inner measurement remains the flat diameter.
+function inwardTriangleThreadDiameter(flatBore) = flatBore / 1.01;
+function inwardTriangleThreadWall(flatBore, wallThickness) = wallThickness + (flatBore - inwardTriangleThreadDiameter(flatBore)) / 2;
+function inwardTriangleThreadAngle(baseWidth, radialHeight) = atan(baseWidth / (2 * radialHeight));
+
 if(connector_hose_demo){
 $fn = 64;
 spacer = 100;
@@ -120,8 +125,8 @@ module HoseConnector(
     str("chamferWidth must be a number greater than or equal to 0; got: ", chamferWidth));
   assert(is_string(enableThreads) && (enableThreads == "disabled" || enableThreads == "enabled" || enableThreads == "reversed"),
     str("enableThreads must be 'disabled', 'enabled', or 'reversed'; got: ", enableThreads));
-  assert(is_string(threadProfile) && (threadProfile == "v_angle" || threadProfile == "round"),
-    str("threadProfile must be 'v_angle' or 'round'; got: ", threadProfile));
+  assert(is_string(threadProfile) && (threadProfile == "v_angle" || threadProfile == "round" || threadProfile == "inward_triangle"),
+    str("threadProfile must be 'v_angle', 'round', or 'inward_triangle'; got: ", threadProfile));
 
   assert(is_num(threadPitch) && threadPitch >= 0,
     str("threadPitch must be a number greater than or equal to 0; got: ", threadPitch));
@@ -131,6 +136,20 @@ module HoseConnector(
     str("threadToothHeight must be a number greater than or equal to 0; got: ", threadToothHeight));
   assert(is_num(threadToothWidth) && threadToothWidth >= 0,
     str("threadToothWidth must be a number greater than or equal to 0; got: ", threadToothWidth));
+  assert(threadProfile != "inward_triangle" || enableThreads == "disabled" || connectorMeasurement == "inner",
+    "threadProfile inward_triangle is only supported for connectorMeasurement='inner'");
+  assert(threadProfile != "inward_triangle" || enableThreads == "disabled" || innerStartDiameter == innerEndDiameter,
+    "threadProfile inward_triangle does not support taper");
+  assert(threadProfile != "inward_triangle" || enableThreads == "disabled" || threadPitch > 0,
+    "threadProfile inward_triangle requires threadPitch > 0");
+  assert(threadProfile != "inward_triangle" || enableThreads == "disabled" || threadToothHeight > 0,
+    "threadProfile inward_triangle requires threadToothHeight > 0");
+  assert(threadProfile != "inward_triangle" || enableThreads == "disabled" || threadToothWidth > 0,
+    "threadProfile inward_triangle requires threadToothWidth > 0");
+  assert(threadProfile != "inward_triangle" || enableThreads == "disabled" || threadToothWidth < threadPitch,
+    "threadProfile inward_triangle requires threadToothWidth < threadPitch");
+  assert(threadProfile != "inward_triangle" || enableThreads == "disabled" || innerStartDiameter > 2*threadToothHeight,
+    "threadProfile inward_triangle must retain an open bore");
 
   assert(stopLength == 0 || stopWidth > 0,
     str("stopWidth must be greater than 0 when stopLength is enabled; stopLength=", stopLength, ", stopWidth=", stopWidth));
@@ -141,11 +160,24 @@ module HoseConnector(
 
   _barbsThickness = barbsThickness == 0 ? wallThickness/2 : barbsThickness;
   barbLength = length/(barbsCount*2+1);
+  inwardThread = threadProfile == "inward_triangle" && enableThreads != "disabled";
 
   union() {
     if(length > 0){
       difference ()
       {
+        if (inwardThread)
+          InternalHoseThread(
+            diameter = inwardTriangleThreadDiameter(innerStartDiameter),
+            wallThickness = inwardTriangleThreadWall(innerStartDiameter, wallThickness),
+            height = length,
+            tolerance = 0,
+            pitch = threadPitch,
+            tooth_angle = inwardTriangleThreadAngle(threadToothWidth, threadToothHeight),
+            // InternalHoseThread uses tooth_height as the axial tooth width.
+            tooth_height = threadToothWidth,
+            reverse_thread = (enableThreads == "enabled"));
+        else
         //outer cylinder
         translate([0,0,0])
         hull()
@@ -156,7 +188,7 @@ module HoseConnector(
         }
 
         //Inner cylinder or internal thread to remove
-        if (enableThreads != "disabled" && connectorMeasurement == "inner") {
+        if (!inwardThread && enableThreads != "disabled" && connectorMeasurement == "inner") {
           if (threadProfile == "round") {
             RoundScrewThread(
               major_diam = innerStartDiameter,
@@ -184,7 +216,7 @@ module HoseConnector(
             translate([0, 0, -fudgeFactor])
             cylinder(h = length + fudgeFactor*4, d = innerStartDiameter - 2*threadToothHeight);
           }
-        } else {
+        } else if (!inwardThread) {
           translate([0,0,0-fudgeFactor])
           hull()
           {
@@ -313,6 +345,8 @@ module HoseConnector(
     "enableThreads", enableThreads,
     "threadPitch", threadPitch,
     "threadToothAngle", threadToothAngle,
-    "threadToothHeight", threadToothHeight
+    "threadToothHeight", threadToothHeight,
+    "threadToothWidth", threadToothWidth,
+    "threadProfile", threadProfile
     ],help);
 }

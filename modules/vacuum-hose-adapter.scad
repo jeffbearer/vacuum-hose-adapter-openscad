@@ -162,6 +162,9 @@ module adapter(
         {
           translate([0, 0, con[iLength]])
           mirror ([0,0,1])
+          // Inlets cancel the Z reflection; compensate other ends only for the new profile.
+          mirror(con[iThreadProfile] == "inward_triangle" && con[iEnableThreads] != "disabled"
+            && connectorPos != 1 ? [1,0,0] : [0,0,0])
           HoseConnector(
             innerStartDiameter = con[iInnerStartDiameter],
             innerEndDiameter = con[iInnerEndDiameter],
@@ -179,6 +182,7 @@ module adapter(
             threadPitch = con[iThreadPitch],
             threadToothAngle = con[iThreadToothAngle],
             threadToothHeight = con[iThreadToothHeight],
+            threadToothWidth = con[iThreadToothWidth],
             threadProfile = con[iThreadProfile],
             help = help,
             $fn = $fn);

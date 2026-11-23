@@ -83,6 +83,10 @@ End1_Hose_Threads_Pitch = 0;
 End1_Hose_Threads_Tooth_Angle = 30;
 // Thread Tooth Height
 End1_Hose_Threads_Tooth_Height = 0;
+// Thread Tooth Width (axial width for inward_triangle profile)
+End1_Hose_Threads_Tooth_Width = 0;
+// Thread profile. inward_triangle uses Tooth Height as radial height and derives angle from Height+Width.
+End1_Hose_Threads_Profile = "v_angle"; //[v_angle, round, inward_triangle]
 
 /* [Connector 1 - Flange] */
 //Width of Flange added to the connector diameter
@@ -233,6 +237,10 @@ End2_Hose_Threads_Pitch = 0;
 End2_Hose_Threads_Tooth_Angle = 30;
 // Thread Tooth Height
 End2_Hose_Threads_Tooth_Height = 0;
+// Thread Tooth Width (axial width for inward_triangle profile)
+End2_Hose_Threads_Tooth_Width = 0;
+// Thread profile. inward_triangle uses Tooth Height as radial height and derives angle from Height+Width.
+End2_Hose_Threads_Profile = "v_angle"; //[v_angle, round, inward_triangle]
 
 /* [Connector 2 - Flange] */
 //Width of Flange added to the connector diameter
@@ -358,6 +366,10 @@ End3_Hose_Threads_Pitch = 0;
 End3_Hose_Threads_Tooth_Angle = 30;
 // Thread Tooth Height
 End3_Hose_Threads_Tooth_Height = 0;
+// Thread Tooth Width (axial width for inward_triangle profile)
+End3_Hose_Threads_Tooth_Width = 0;
+// Thread profile. inward_triangle uses Tooth Height as radial height and derives angle from Height+Width.
+End3_Hose_Threads_Profile = "v_angle"; //[v_angle, round, inward_triangle]
 
 /* [Connector 3 - Flange] */
 //Width of Flange added to the connector diameter
@@ -479,6 +491,7 @@ HoseAdapter(
     threadPitch=End1_Hose_Threads_Pitch,
     threadToothAngle=End1_Hose_Threads_Tooth_Angle,
     threadToothHeight=End1_Hose_Threads_Tooth_Height,
+    threadProfile=End1_Hose_Threads_Profile,
     magnetCount=End1_Magnets_Count,
     magnetDiameter=End1_Magnet_Diameter,
     magnetThickness=End1_Magnet_Thickness,
@@ -507,7 +520,8 @@ HoseAdapter(
     extensionSlipRingSupportSpacing=End1_Extension_SlipRing_Support_Spacing,
     extensionStopThickness=End1_Extension_StopThickness,
     extensionStopLength=End1_Extension_StopLength,
-    extensionStopSymmetrical=End1_Extension_Stop_Symmetrical
+    extensionStopSymmetrical=End1_Extension_Stop_Symmetrical,
+    threadToothWidth=End1_Hose_Threads_Tooth_Width
     ), fitAdjustment = End1_Oneida_Fit_Adjustment),
 
   connector2 = OneidaConnectorSettings(settings = UserConnectorSettings(
@@ -531,6 +545,7 @@ HoseAdapter(
     threadPitch=End2_Hose_Threads_Pitch,
     threadToothAngle=End2_Hose_Threads_Tooth_Angle,
     threadToothHeight=End2_Hose_Threads_Tooth_Height,
+    threadProfile=End2_Hose_Threads_Profile,
     magnetCount=End2_Magnets_Count,
     magnetDiameter=End2_Magnet_Diameter,
     magnetThickness=End2_Magnet_Thickness,
@@ -569,7 +584,8 @@ HoseAdapter(
     extensionSlipRingSupportSpacing=End2_Extension_SlipRing_Support_Spacing,
     extensionStopThickness=End2_Extension_StopThickness,
     extensionStopLength=End2_Extension_StopLength,
-    extensionStopSymmetrical=End2_Extension_Stop_Symmetrical
+    extensionStopSymmetrical=End2_Extension_Stop_Symmetrical,
+    threadToothWidth=End2_Hose_Threads_Tooth_Width
   ), fitAdjustment = End2_Oneida_Fit_Adjustment),
 
   connector3 = OneidaConnectorSettings(settings = UserConnectorSettings(
@@ -593,6 +609,7 @@ HoseAdapter(
     threadPitch=End3_Hose_Threads_Pitch,
     threadToothAngle=End3_Hose_Threads_Tooth_Angle,
     threadToothHeight=End3_Hose_Threads_Tooth_Height,
+    threadProfile=End3_Hose_Threads_Profile,
     magnetCount=End3_Magnets_Count,
     magnetDiameter=End3_Magnet_Diameter,
     magnetThickness=End3_Magnet_Thickness,
@@ -631,7 +648,8 @@ HoseAdapter(
     extensionSlipRingSupportSpacing=End3_Extension_SlipRing_Support_Spacing,
     extensionStopThickness=End3_Extension_StopThickness,
     extensionStopLength=End3_Extension_StopLength,
-    extensionStopSymmetrical=End3_Extension_Stop_Symmetrical
+    extensionStopSymmetrical=End3_Extension_Stop_Symmetrical,
+    threadToothWidth=End3_Hose_Threads_Tooth_Width
   ), fitAdjustment = End3_Oneida_Fit_Adjustment),
 
   transitionStyle = Transition_Style,

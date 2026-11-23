@@ -34,6 +34,9 @@ Intended for connection between two hoses or a hose and a tool exhaust.
 * Diameter: Internal or external diameter of the intended connector.
 * Length: The length of the connection end.
 * Taper: the hose connection can be tapered to allow for a tighter fit.
+* Optional thread profiles include `v_angle`, `round`, and `inward_triangle` (internal-only, no taper). Use `inward_triangle` for screw-over spiral-hose sockets that need pointed inward ribs rather than triangular grooves. The inner diameter measures the flats; tooth height projects radially inward and tooth width measures the triangular base along the axis. Set a positive pitch greater than the width; the angle is derived from width and height. `enabled` selects left-hand threads and `reversed` right-hand threads at either end.
+
+A fit-tested example for a Shop Nation mitre-saw dust-collection hose uses a 40.4 mm flat-bore diameter, 2.5 mm radial tooth height, 2.5 mm axial base width, 5 mm pitch, and left-hand threads. This gives a 35.4 mm thread-tip diameter; these are example dimensions, not universal hose defaults.
 
 ### Oneida quick-clamp connection
 Compatible with Oneida Quick-Clamp ducting using nominal inch sizes.
